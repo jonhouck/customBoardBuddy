@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+llama-index
+azure-search-documents
+streamlit
+PyMuPDF
+msal
+pytest
+ruff

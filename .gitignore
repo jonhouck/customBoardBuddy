@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Environment variables
+.env
+.env.local
+
+# Virtual Environments
+venv/
+env/
+.venv/
+
+# Caching
+.ruff_cache/
+.pytest_cache/
+
+# Streamlit
+.streamlit/
+
+# Node
+node_modules/
+
+# OS Files
+.DS_Store
+Thumbs.db
