@@ -1,0 +1,145 @@
+from fastapi import FastAPI, HTTPException, Depends
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from typing import List, Optional, Dict, Any
+from azure.search.documents.models import VectorizedQuery
+import logging
+
+from api.config import get_settings, get_azure_search_client, get_azure_openai_client
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+app = FastAPI(
+    title="BoardBuddy RAG API",
+    description="FastAPI backend for BoardBuddy RAG application",
+    version="1.0.0"
+)
+
+# Allow CORS for frontend (Streamlit/Chainlit)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Adjust this in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+class ChatRequest(BaseModel):
+    query: str
+    history: Optional[List[Dict[str, str]]] = None
+
+class Citation(BaseModel):
+    title: str
+    url: Optional[str] = None
+    document_type: str
+    date_published: Optional[str] = None
+    content: str
+    
+class ChatResponse(BaseModel):
+    response: str
+    citations: List[Citation]
+
+SYSTEM_PROMPT = """You are BoardBuddy, an authoritative, helpful, and highly accurate AI assistant for the Metropolitan Water District of Southern California (MWD).
+Your primary role is to answer questions based *only* on the provided context, which includes official MWD documents, board matters, and SharePoint files.
+
+Guidelines:
+1. Answer the user's question directly and concisely based on the context.
+2. If the answer cannot be found in the context, clearly state that you do not have enough information to answer the question. Do not hallucinate or guess.
+3. Be professional and objective in your tone.
+4. Base your response strongly on the provided citations.
+"""
+
+@app.post("/chat", response_model=ChatResponse)
+async def chat_endpoint(request: ChatRequest):
+    settings = get_settings()
+    
+    try:
+        search_client = get_azure_search_client()
+        openai_client = get_azure_openai_client()
+    except Exception as e:
+        logger.error(f"Failed to initialize clients: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error initializing clients.")
+        
+    query = request.query
+    
+    try:
+        # 1. Embed the user query
+        emb_response = openai_client.embeddings.create(
+            input=query,
+            model=settings.AZURE_OPENAI_EMBEDDING_DEPLOYMENT
+        )
+        query_vector = emb_response.data[0].embedding
+        
+        # 2. Perform Hybrid Search on Azure Search
+        vector_query = VectorizedQuery(
+            vector=query_vector,
+            k_nearest_neighbors=5,
+            fields="content_vector"
+        )
+        
+        # Perform search
+        search_results = search_client.search(
+            search_text=query,
+            vector_queries=[vector_query],
+            select=["id", "chunk_text", "title", "source_url", "document_type", "date_published"],
+            top=5
+        )
+        
+        citations = []
+        context_parts = []
+        
+        for i, result in enumerate(search_results):
+            score = result.get("@search.score", 0)
+            text = result.get("chunk_text", "")
+            title = result.get("title", "Unknown Title")
+            url = result.get("source_url")
+            doc_type = result.get("document_type", "Unknown")
+            date_pub = result.get("date_published")
+            
+            # Format date to string if present
+            if date_pub:
+                date_pub = str(date_pub)
+                
+            citations.append(
+                Citation(
+                    title=title,
+                    url=url,
+                    document_type=doc_type,
+                    date_published=date_pub,
+                    content=text
+                )
+            )
+            
+            context_parts.append(f"Document [{i+1}]:\nTitle: {title}\nType: {doc_type}\nDate: {date_pub}\nContent: {text}\n")
+            
+        context_string = "\n".join(context_parts)
+        
+        # 3. Construct the prompt for the LLM
+        messages = [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": f"Context information is below.\n---------------------\n{context_string}\n---------------------\nGiven the context information above, please answer the following question: {query}"}
+        ]
+        
+        # 4. Generate Response using o3-mini
+        completion = openai_client.chat.completions.create(
+            model=settings.AZURE_OPENAI_CHAT_DEPLOYMENT,
+            messages=messages,
+            max_completion_tokens=2000
+        )
+        
+        answer = completion.choices[0].message.content
+        
+        return ChatResponse(
+            response=answer,
+            citations=citations
+        )
+        
+    except Exception as e:
+        logger.error(f"Error processing chat request: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
