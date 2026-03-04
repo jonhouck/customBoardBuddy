@@ -4,8 +4,8 @@
   - [x] Initialize Python environment and `requirements.txt`
   - [x] Create `.env.example` file mapping out all required environment variables
   - [x] Create basic directory structure (`/ingestion`, `/api`, `/ui`)
-- [ ] **Phase 2: Azure AI Search Setup**
-  - [ ] Write setup script for Azure AI Search index (`/ingestion/indexer.py`)
+- [x] **Phase 2: Azure AI Search Setup**
+  - [x] Write setup script for Azure AI Search index (`/ingestion/indexer.py`)
 - [ ] **Phase 3: Granicus Legistar Ingestion**
   - [ ] Write script to query Legistar Web API (`/ingestion/legistar_worker.py`)
   - [ ] Chunk, embed, and push data to index
