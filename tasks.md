@@ -6,9 +6,9 @@
   - [x] Create basic directory structure (`/ingestion`, `/api`, `/ui`)
 - [x] **Phase 2: Azure AI Search Setup**
   - [x] Write setup script for Azure AI Search index (`/ingestion/indexer.py`)
-- [ ] **Phase 3: Granicus Legistar Ingestion**
-  - [ ] Write script to query Legistar Web API (`/ingestion/legistar_worker.py`)
-  - [ ] Chunk, embed, and push data to index
+- [x] **Phase 3: Granicus Legistar Ingestion**
+  - [x] Write script to query Legistar Web API (`/ingestion/legistar_worker.py`)
+  - [x] Chunk, embed, and push data to index
 - [ ] **Phase 4: SharePoint Ingestion**
   - [ ] Write script using `msal` to authenticate with MS Graph API (`/ingestion/sharepoint_worker.py`)
   - [ ] Chunk, embed, and push SharePoint data to index

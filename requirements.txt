@@ -9,3 +9,7 @@ pytest
 ruff
 python-dotenv
 azure-identity
+requests
+tiktoken
+openai
+python-dateutil
