@@ -190,25 +190,32 @@ def process_legistar_bulk(max_matters: int = 500, batch_size: int = 50):
                 download_url = attachment.get("MatterAttachmentHyperlink", "")
                 
                 if not str(file_name).lower().endswith(".pdf"):
+                    print(f"    Skipped: {attachment_name} is not a PDF ({file_name})")
                     continue
                     
                 if not str(download_url).startswith("http"):
+                    print(f"    Skipped: {attachment_name} has invalid url ({download_url})")
                     continue 
 
                 # Idempotency check: skip if we've already indexed this exact document
                 if download_url in indexed_urls:
-                    print(f"  Skipping already-indexed attachment: {attachment_name}")
+                    print(f"    Skipped: {attachment_name} is already indexed.")
                     continue
 
+                print(f"    Downloading: {attachment_name}...")
                 pdf_bytes = download_attachment(download_url)
                 if not pdf_bytes:
+                    print(f"    Error: Failed to download {attachment_name}")
                     continue
 
+                print(f"    Extracting text from {attachment_name}...")
                 text = extract_text_from_pdf_bytes(pdf_bytes)
                 if not text:
+                    print(f"    Warning: No text extracted from {attachment_name}")
                     continue
 
                 chunks = chunk_text(text)
+                print(f"    Chunking complete: {len(chunks)} chunks generated.")
                 for chunk in chunks:
                     safe_title = f"{title[:450]} - {attachment_name}" 
                     
