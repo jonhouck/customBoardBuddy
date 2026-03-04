@@ -7,3 +7,5 @@ PyMuPDF
 msal
 pytest
 ruff
+python-dotenv
+azure-identity
