@@ -1,0 +1,94 @@
+/* MWD Branding CSS */
+
+/* Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Prata&family=Roboto:wght@300;400;500&family=Roboto+Condensed:wght@400&display=swap');
+
+html, body, [class*="css"] {
+    font-family: 'Roboto', sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Prata', serif;
+    color: #1c2240; /* MWD Navy */
+}
+
+/* Backgrounds */
+.stApp {
+    background-color: #ececec; /* MWD Silver */
+}
+
+.stSidebar {
+    background-color: #1c2240 !important; /* MWD Navy */
+}
+.stSidebar [data-testid="stMarkdownContainer"], 
+.stSidebar h1, .stSidebar h2, .stSidebar h3, .stSidebar p, .stSidebar span {
+    color: #ffffff !important;
+}
+
+/* Chat Bubbles */
+[data-testid="stChatMessage"] {
+    background-color: #ffffff;
+    border: 1px solid #5a5b5d; /* MWD Slate */
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+[data-testid="stChatMessage"][data-baseweb="card"]:nth-child(odd) {
+    background-color: #ececec; /* MWD Silver */
+    border: 1px solid #c6deff; /* MWD Blue 3 */
+}
+
+[data-testid="stChatMessage"] * {
+    color: #1c2240; /* MWD Navy */
+}
+
+/* Buttons */
+.stButton > button {
+    background-color: #4795ff !important; /* MWD Blue 1 */
+    color: #ffffff !important;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+}
+
+.stButton > button:hover {
+    background-color: #80b9f5 !important; /* MWD Blue 2 */
+}
+
+.stButton > button:active {
+    background-color: #ba4d01 !important; /* MWD Orange 1 */
+}
+
+/* Highlights & Alerts */
+.stAlert {
+    border-left-color: #ba4d01 !important; /* MWD Orange 1 */
+}
+[data-testid="stNotification"] {
+    background-color: #ff9475 !important; /* MWD Red 2 */
+    color: #1c2240 !important;
+}
+
+/* Citations & Pills */
+.citation-link {
+    background-color: #c6deff; /* MWD Blue 3 */
+    color: #1c2240;
+    padding: 2px 6px;
+    border-radius: 12px;
+    font-size: 0.85em;
+    text-decoration: none;
+    display: inline-block;
+    margin: 2px;
+}
+
+.citation-link:hover {
+    background-color: #80b9f5; /* MWD Blue 2 */
+    color: #ffffff;
+}
+
+.source-meta {
+    font-size: 0.8em;
+    color: #5a5b5d; /* MWD Slate */
+    margin-bottom: 4px;
+}
