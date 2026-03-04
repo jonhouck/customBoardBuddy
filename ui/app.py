@@ -84,10 +84,16 @@ if prompt := st.chat_input("Ask a question... (e.g., 'What was the budget for th
         
         # Prepare request payload
         api_url = "http://localhost:8000/chat"
+        
+        # Filter history to only include role and content (drop massive citations array)
+        filtered_history = [
+            {"role": msg["role"], "content": msg["content"]} 
+            for msg in st.session_state.messages[:-1]
+        ]
+        
         payload = {
             "query": prompt,
-            # We could send history here if the backend supports conversational context
-            # "history": st.session_state.messages[:-1]
+            "history": filtered_history
         }
         
         try:

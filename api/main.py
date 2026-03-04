@@ -63,16 +63,35 @@ async def chat_endpoint(request: ChatRequest):
         raise HTTPException(status_code=500, detail="Internal server error initializing clients.")
         
     query = request.query
+    search_query = query
     
     try:
-        # 1. Embed the user query
+        # 1. Query Rewriting (if history exists)
+        if request.history and len(request.history) > 0:
+            rewrite_prompt = "Given the following conversation history and the user's latest question, rewrite the latest question into a single, standalone search query that contains all necessary context (e.g., specific dates, meeting names, topics) to find relevant documents in a search engine. Do not answer the question, just provide the standalone search query."
+            
+            rewrite_messages = [{"role": "system", "content": rewrite_prompt}]
+            # Provide up to last 5 messages for context
+            for msg in request.history[-5:]:
+                rewrite_messages.append({"role": msg.get("role", "user"), "content": msg.get("content", "")})
+            rewrite_messages.append({"role": "user", "content": f"Latest question: {query}\n\nStandalone search query:"})
+            
+            rewrite_completion = openai_client.chat.completions.create(
+                model=settings.AZURE_OPENAI_CHAT_DEPLOYMENT,
+                messages=rewrite_messages,
+                max_completion_tokens=200
+            )
+            search_query = rewrite_completion.choices[0].message.content.strip().strip('"')
+            logger.info(f"Original query: '{query}' -> Rewritten: '{search_query}'")
+
+        # 2. Embed the search query
         emb_response = openai_client.embeddings.create(
-            input=query,
+            input=search_query,
             model=settings.AZURE_OPENAI_EMBEDDING_DEPLOYMENT
         )
         query_vector = emb_response.data[0].embedding
         
-        # 2. Perform Hybrid Search on Azure Search
+        # 3. Perform Hybrid Search on Azure Search
         vector_query = VectorizedQuery(
             vector=query_vector,
             k_nearest_neighbors=5,
@@ -81,7 +100,7 @@ async def chat_endpoint(request: ChatRequest):
         
         # Perform search
         search_results = search_client.search(
-            search_text=query,
+            search_text=search_query,
             vector_queries=[vector_query],
             select=["id", "chunk_text", "title", "source_url", "document_type", "date_published"],
             top=5
@@ -116,13 +135,25 @@ async def chat_endpoint(request: ChatRequest):
             
         context_string = "\n".join(context_parts)
         
-        # 3. Construct the prompt for the LLM
-        messages = [
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": f"Context information is below.\n---------------------\n{context_string}\n---------------------\nGiven the context information above, please answer the following question: {query}"}
-        ]
+        # 4. Construct the prompt for the LLM
+        messages = [{"role": "system", "content": SYSTEM_PROMPT}]
         
-        # 4. Generate Response using o3-mini
+        # Inject conversation history
+        if request.history:
+            for msg in request.history[-10:]:
+                # Only adding 'user' and 'assistant' roles, ensuring it's safe for Chat Completions
+                role = msg.get("role", "user")
+                if role not in ["user", "assistant", "system", "developer"]:
+                    role = "user"
+                messages.append({"role": role, "content": msg.get("content", "")})
+                
+        # Append the final prompt with context
+        messages.append({
+            "role": "user", 
+            "content": f"Context information is below.\n---------------------\n{context_string}\n---------------------\nGiven the context information above, please answer the following question: {query}"
+        })
+        
+        # 5. Generate Response using o3-mini
         completion = openai_client.chat.completions.create(
             model=settings.AZURE_OPENAI_CHAT_DEPLOYMENT,
             messages=messages,
