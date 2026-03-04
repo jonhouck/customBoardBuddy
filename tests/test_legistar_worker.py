@@ -43,7 +43,7 @@ def test_fetch_matters(mock_get):
 @patch('ingestion.legistar_worker.requests.get')
 def test_fetch_matter_attachments(mock_get):
     mock_response = MagicMock()
-    mock_response.json.return_value = [{"MatterAttachmentId": 456, "MatterAttachmentFileName": "http://example.com/test.pdf"}]
+    mock_response.json.return_value = [{"MatterAttachmentId": 456, "MatterAttachmentFileName": "test.pdf", "MatterAttachmentHyperlink": "http://example.com/test.pdf"}]
     mock_response.status_code = 200
     mock_get.return_value = mock_response
 
@@ -65,7 +65,7 @@ def test_process_legistar_matters(
         {"MatterId": 1, "MatterTitle": "Matter 1", "MatterStatusName": "Adopted", "MatterIntroDate": "2024-05-01T00:00:00"}
     ]
     mock_attachments.return_value = [
-        {"MatterAttachmentName": "Doc 1", "MatterAttachmentFileName": "http://example.com/1.pdf"}
+        {"MatterAttachmentName": "Doc 1", "MatterAttachmentFileName": "1.pdf", "MatterAttachmentHyperlink": "http://example.com/1.pdf"}
     ]
     mock_download.return_value = b"pdfbytes"
     mock_extract.return_value = "Extracted text content for chunking."
