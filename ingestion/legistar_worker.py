@@ -177,21 +177,18 @@ def process_legistar_matters(limit: int = 2):
         
         for attachment in attachments:
             attachment_name = attachment.get("MatterAttachmentName", "Unknown Attachment")
-            link = attachment.get("MatterAttachmentFileName") # Often acts as a URL depending on configuration
+            file_name = attachment.get("MatterAttachmentFileName", "")
+            download_url = attachment.get("MatterAttachmentHyperlink", "")
             
-            if not link or not str(link).endswith(".pdf"):
+            if not str(file_name).lower().endswith(".pdf"):
                 print(f"  Skipping non-pdf attachment: {attachment_name}")
                 continue
                 
-            print(f"  Downloading & chunking: {attachment_name}...")
-            # For this simple script, we assume the FileName holds the URL or we construct it.
-            # In Legistar, "MatterAttachmentFileName" is sometimes a direct URL, or we might need "MatterAttachmentLink"
-            download_url = attachment.get("MatterAttachmentFileName")
-            
-            # Note: Often "MatterAttachmentLink" or a constructed URL is used. 
-            # We'll try MatterAttachmentFileName if it looks like http, otherwise constructing
             if not str(download_url).startswith("http"):
-                  continue # Skip if we can't figure out the URL easily in this prototype
+                print(f"  Skipping attachment, no valid download link: {attachment_name}")
+                continue
+
+            print(f"  Downloading & chunking: {attachment_name}...")
 
             pdf_bytes = download_attachment(download_url)
             if not pdf_bytes:

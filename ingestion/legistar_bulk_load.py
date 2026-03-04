@@ -186,12 +186,12 @@ def process_legistar_bulk(max_matters: int = 500, batch_size: int = 50):
             
             for attachment in attachments:
                 attachment_name = attachment.get("MatterAttachmentName", "Unknown Attachment")
-                link = attachment.get("MatterAttachmentFileName") 
+                file_name = attachment.get("MatterAttachmentFileName", "")
+                download_url = attachment.get("MatterAttachmentHyperlink", "")
                 
-                if not link or not str(link).endswith(".pdf"):
+                if not str(file_name).lower().endswith(".pdf"):
                     continue
                     
-                download_url = attachment.get("MatterAttachmentFileName")
                 if not str(download_url).startswith("http"):
                     continue 
 
