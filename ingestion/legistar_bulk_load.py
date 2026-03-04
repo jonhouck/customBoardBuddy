@@ -65,6 +65,25 @@ def generate_embedding(text: str, client: AzureOpenAI) -> list[float]:
     response = client.embeddings.create(input=[text], model=AZURE_OPENAI_EMBEDDING_DEPLOYMENT)
     return response.data[0].embedding
 
+def get_indexed_urls(search_client: SearchClient) -> set[str]:
+    """Fetch all source_urls currently indexed from Legistar to avoid reprocessing."""
+    indexed_urls = set()
+    try:
+        # Paginating through all results fetching just the source_url
+        results = search_client.search(
+            search_text="*",
+            filter="source_system eq 'Legistar'",
+            select=["source_url"]
+        )
+        for doc in results:
+            url = doc.get("source_url")
+            if url:
+                indexed_urls.add(url)
+        print(f"Loaded {len(indexed_urls)} already-indexed URLs to skip.")
+    except Exception as e:
+        print(f"Error fetching indexed URLs (index might be empty): {e}")
+    return indexed_urls
+
 def fetch_matters_paginated(skip: int = 0, top: int = 50) -> list[dict]:
     """Fetch matters from Legistar API with pagination."""
     url = f"{LEGISTAR_API_BASE_URL}/{LEGISTAR_CLIENT_NAME}/Matters"
@@ -115,6 +134,9 @@ def process_legistar_bulk(max_matters: int = 500, batch_size: int = 50):
     openai_client = get_openai_client()
     search_client = get_search_client()
 
+    # Load previously indexed URLs to skip them
+    indexed_urls = get_indexed_urls(search_client)
+
     total_processed = 0
     skip = 0
 
@@ -160,6 +182,11 @@ def process_legistar_bulk(max_matters: int = 500, batch_size: int = 50):
                 download_url = attachment.get("MatterAttachmentFileName")
                 if not str(download_url).startswith("http"):
                     continue 
+
+                # Idempotency check: skip if we've already indexed this exact document
+                if download_url in indexed_urls:
+                    print(f"  Skipping already-indexed attachment: {attachment_name}")
+                    continue
 
                 pdf_bytes = download_attachment(download_url)
                 if not pdf_bytes:
