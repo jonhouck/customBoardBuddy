@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 from azure.search.documents.models import VectorizedQuery
 import logging
+import re
 
 from api.config import get_settings, get_azure_search_client, get_azure_openai_client
 
@@ -49,6 +50,7 @@ Guidelines:
 2. If the answer cannot be found in the context, clearly state that you do not have enough information to answer the question. Do not hallucinate or guess.
 3. Be professional and objective in your tone.
 4. Base your response strongly on the provided citations.
+5. You must cite your sources using bracketed numbers (e.g., [1]). You may consider all provided documents, but you MUST ONLY cite the most relevant sources in your final response (do not exceed 5 distinct sources). Never cite more than 5 documents.
 """
 
 @app.post("/chat", response_model=ChatResponse)
@@ -78,8 +80,7 @@ async def chat_endpoint(request: ChatRequest):
             
             rewrite_completion = openai_client.chat.completions.create(
                 model=settings.AZURE_OPENAI_CHAT_DEPLOYMENT,
-                messages=rewrite_messages,
-                max_completion_tokens=200
+                messages=rewrite_messages
             )
             search_query = rewrite_completion.choices[0].message.content.strip().strip('"')
             logger.info(f"Original query: '{query}' -> Rewritten: '{search_query}'")
@@ -156,15 +157,50 @@ async def chat_endpoint(request: ChatRequest):
         # 5. Generate Response using o3-mini
         completion = openai_client.chat.completions.create(
             model=settings.AZURE_OPENAI_CHAT_DEPLOYMENT,
-            messages=messages,
-            max_completion_tokens=2000
+            messages=messages
         )
         
         answer = completion.choices[0].message.content
         
+        # 6. Post-process citations to only return what was used and re-map indices for the UI
+        cited_indices = set()
+        for match in re.finditer(r'\[(\d+)\]', answer):
+            idx = int(match.group(1))
+            if 1 <= idx <= len(citations):
+                cited_indices.add(idx)
+        
+        # Sort them by their original score/relevance
+        cited_indices = sorted(list(cited_indices))
+        
+        # Limit to the requested max returned citations
+        limited_indices = cited_indices[:settings.AZURE_SEARCH_RETURN_K]
+        
+        # Create mapping from old index to new 1-based index
+        mapping = {}
+        for new_idx, old_idx in enumerate(limited_indices, start=1):
+            mapping[old_idx] = new_idx
+            
+        def replace_citation(match):
+            idx = int(match.group(1))
+            if idx in mapping:
+                return f"[{mapping[idx]}]"
+            # Remove the citation if it was truncated, to avoid broken frontend links
+            return ""
+            
+        # Perform replacement
+        remapped_answer = re.sub(r'\[(\d+)\]', replace_citation, answer)
+        
+        # Build the final citations array
+        final_citations = [citations[old_idx - 1] for old_idx in limited_indices]
+        
+        # Fallback if no citations were used or matched
+        if not final_citations:
+            final_citations = citations[:settings.AZURE_SEARCH_RETURN_K]
+            remapped_answer = answer # keep original answer if we didn't process anything successfully
+        
         return ChatResponse(
-            response=answer,
-            citations=citations[:settings.AZURE_SEARCH_RETURN_K]
+            response=remapped_answer,
+            citations=final_citations
         )
         
     except Exception as e:
