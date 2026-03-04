@@ -102,9 +102,23 @@ def fetch_matters(watermark: str | None = None, limit: int = 5) -> list[dict]:
 def fetch_matter_attachments(matter_id: int) -> list[dict]:
     """Fetch attachments metadata for a specific matter."""
     url = f"{LEGISTAR_API_BASE_URL}/{LEGISTAR_CLIENT_NAME}/Matters/{matter_id}/Attachments"
-    response = requests.get(url)
-    if response.status_code == 200:
-        return response.json()
+    for attempt in range(3):
+        try:
+            # Set a timeout and handle potential connection drops
+            response = requests.get(url, timeout=30)
+            if response.status_code == 200:
+                return response.json()
+            elif response.status_code == 429:
+                import time
+                sleep_time = (attempt + 1) * 5
+                print(f"  Rate limited fetching attachments. Waiting {sleep_time} seconds...")
+                time.sleep(sleep_time)
+            else:
+                break
+        except Exception as e:
+            import time
+            print(f"  Error fetching attachments (attempt {attempt+1}): {e}")
+            time.sleep(2)
     return []
 
 def download_attachment(url: str) -> bytes | None:
