@@ -68,12 +68,33 @@ def generate_embedding(text: str, client: AzureOpenAI) -> list[float]:
     response = client.embeddings.create(input=[text], model=AZURE_OPENAI_EMBEDDING_DEPLOYMENT)
     return response.data[0].embedding
 
-def fetch_matters(limit: int = 5) -> list[dict]:
-    """Fetch recent matters from Legistar API."""
+def get_latest_watermark(search_client: SearchClient) -> str | None:
+    """Check Azure AI Search for the most recently published Legistar matter."""
+    try:
+        results = search_client.search(
+            search_text="*",
+            filter="source_system eq 'Legistar'",
+            order_by=["date_published desc"],
+            top=1,
+            select=["date_published"]
+        )
+        for doc in results:
+            return doc.get("date_published")
+    except Exception as e:
+        print(f"Error fetching watermark: {e}")
+    return None
+
+def fetch_matters(watermark: str | None = None, limit: int = 5) -> list[dict]:
+    """Fetch matters from Legistar API, optionally newer than a watermark date."""
     url = f"{LEGISTAR_API_BASE_URL}/{LEGISTAR_CLIENT_NAME}/Matters"
-    # Just a simple top query for testing
     params = {"$top": limit, "$orderby": "MatterIntroDate desc"}
-    print(f"Fetching {limit} matters from Legistar API...")
+    if watermark:
+        legistar_date = watermark.replace("Z", "")
+        params["$filter"] = f"MatterIntroDate gt datetime'{legistar_date}'"
+        print(f"Fetching matters newer than {legistar_date} from Legistar API...")
+    else:
+        print(f"Fetching {limit} latest matters from Legistar API...")
+        
     response = requests.get(url, params=params)
     response.raise_for_status()
     return response.json()
@@ -95,13 +116,19 @@ def download_attachment(url: str) -> bytes | None:
 
 def process_legistar_matters(limit: int = 2):
     """Main workflow to process Granicus Legistar matters."""
-    matters = fetch_matters(limit=limit)
-    if not matters:
-        print("No matters found.")
-        return
-
     openai_client = get_openai_client()
     search_client = get_search_client()
+
+    watermark = get_latest_watermark(search_client)
+    if watermark:
+        print(f"High-water mark found: {watermark}")
+    else:
+        print("No high-water mark found. Fetching latest matters.")
+
+    matters = fetch_matters(watermark=watermark, limit=limit)
+    if not matters:
+        print("No new matters found.")
+        return
 
     documents_to_upload = []
 
