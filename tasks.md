@@ -12,7 +12,7 @@
 - [x] **Phase 4: SharePoint Ingestion**
   - [x] Write script using `msal` to authenticate with MS Graph API (`/ingestion/sharepoint_worker.py`)
   - [x] Chunk, embed, and push SharePoint data to index
-- [ ] **Phase 5: FastAPI RAG Backend**
-  - [ ] Build `/chat` endpoint and orchestration (`/api/main.py`)
+- [x] **Phase 5: FastAPI RAG Backend**
+  - [x] Build `/chat` endpoint and orchestration (`/api/main.py`)
 - [ ] **Phase 6: Frontend UI**
   - [ ] Build Streamlit/Chainlit application (`/ui/app.py`)
