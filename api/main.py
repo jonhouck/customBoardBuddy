@@ -94,7 +94,7 @@ async def chat_endpoint(request: ChatRequest):
         # 3. Perform Hybrid Search on Azure Search
         vector_query = VectorizedQuery(
             vector=query_vector,
-            k_nearest_neighbors=5,
+            k_nearest_neighbors=settings.AZURE_SEARCH_TOP_K,
             fields="content_vector"
         )
         
@@ -103,7 +103,7 @@ async def chat_endpoint(request: ChatRequest):
             search_text=search_query,
             vector_queries=[vector_query],
             select=["id", "chunk_text", "title", "source_url", "document_type", "date_published"],
-            top=5
+            top=settings.AZURE_SEARCH_TOP_K
         )
         
         citations = []
@@ -164,7 +164,7 @@ async def chat_endpoint(request: ChatRequest):
         
         return ChatResponse(
             response=answer,
-            citations=citations
+            citations=citations[:settings.AZURE_SEARCH_RETURN_K]
         )
         
     except Exception as e:
