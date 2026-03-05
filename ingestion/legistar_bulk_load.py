@@ -110,6 +110,30 @@ def fetch_matters_paginated(skip: int = 0, top: int = 50) -> list[dict]:
              break
     return []
 
+def fetch_events_paginated(skip: int = 0, top: int = 50) -> list[dict]:
+    """Fetch events from Legistar API with pagination."""
+    url = f"{LEGISTAR_API_BASE_URL}/{LEGISTAR_CLIENT_NAME}/Events"
+    params = {"$top": top, "$skip": skip, "$orderby": "EventDate desc"}
+    print(f"Fetching {top} events starting at {skip} from Legistar API...")
+    
+    for attempt in range(3):
+        try:
+            response = requests.get(url, params=params)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.HTTPError as e:
+            if response.status_code == 429:
+                sleep_time = (attempt + 1) * 5
+                print(f"Rate limited. Waiting {sleep_time} seconds...")
+                time.sleep(sleep_time)
+            else:
+                print(f"Error fetching events: {e}")
+                break
+        except Exception as e:
+             print(f"Error fetching events: {e}")
+             break
+    return []
+
 def fetch_matter_attachments(matter_id: int) -> list[dict]:
     url = f"{LEGISTAR_API_BASE_URL}/{LEGISTAR_CLIENT_NAME}/Matters/{matter_id}/Attachments"
     for attempt in range(3):
@@ -140,6 +164,110 @@ def download_attachment(url: str) -> bytes | None:
             print(f"Download attempt {attempt+1} failed: {e}")
             time.sleep(2)
     return None
+
+def process_legistar_events(max_events: int = 500, batch_size: int = 50):
+    """Main workflow to process Granicus Legistar events in bulk."""
+    openai_client = get_openai_client()
+    search_client = get_search_client()
+
+    indexed_urls = get_indexed_urls(search_client)
+
+    total_processed = 0
+    skip = 0
+
+    while total_processed < max_events:
+        events = fetch_events_paginated(skip=skip, top=batch_size)
+        if not events:
+            print("No more events found or API error limit reached.")
+            break
+
+        documents_to_upload = []
+
+        for event in events:
+            event_id = event.get("EventId")
+            title = event.get("EventBodyName", "Unknown Committee")
+            intro_date_str = event.get("EventDate")
+            
+            try:
+                if intro_date_str:
+                     dt = parser.parse(intro_date_str)
+                     if dt.tzinfo is None:
+                         dt = dt.replace(tzinfo=timezone.utc)
+                     date_published = dt.isoformat().replace("+00:00", "Z")
+                     year = dt.year
+                else:
+                     date_published = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+                     year = datetime.now(timezone.utc).year
+            except Exception:
+                date_published = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+                year = datetime.now(timezone.utc).year
+
+            print(f"Processing Event ID: {event_id} - {title[:50]}...")
+            
+            files_to_process = []
+            
+            agenda_file = event.get("EventAgendaFile")
+            if agenda_file:
+                files_to_process.append(("Agenda", agenda_file))
+                
+            minutes_file = event.get("EventMinutesFile")
+            if minutes_file:
+                files_to_process.append(("Minutes", minutes_file))
+                
+            for doc_label, download_url in files_to_process:
+                if not str(download_url).startswith("http"):
+                    continue
+                
+                if download_url in indexed_urls:
+                    print(f"    Skipped: {doc_label} is already indexed.")
+                    continue
+                
+                print(f"    Downloading: {doc_label}...")
+                pdf_bytes = download_attachment(download_url)
+                if not pdf_bytes:
+                    print(f"    Error: Failed to download {doc_label}")
+                    continue
+
+                print(f"    Extracting text from {doc_label}...")
+                text = extract_text_from_pdf_bytes(pdf_bytes)
+                if not text:
+                    print(f"    Warning: No text extracted from {doc_label}")
+                    continue
+
+                chunks = chunk_text(text)
+                print(f"    Chunking complete: {len(chunks)} chunks generated.")
+                for chunk in chunks:
+                    safe_title = f"{title[:450]} - {doc_label}" 
+                    
+                    doc = {
+                        "id": str(uuid.uuid4()),
+                        "chunk_text": chunk,
+                        "content_vector": generate_embedding(chunk, openai_client),
+                        "source_system": "Legistar",
+                        "document_type": f"Event {doc_label}",
+                        "matter_status": "Final",
+                        "year": year,
+                        "date_published": date_published,
+                        "title": safe_title,
+                        "source_url": download_url
+                    }
+                    documents_to_upload.append(doc)
+
+        if documents_to_upload:
+            print(f"Uploading {len(documents_to_upload)} chunks to Azure Search from batch...")
+            try:
+                search_client.upload_documents(documents=documents_to_upload)
+                print("Uploaded successfully.")
+            except Exception as e:
+                print(f"Error uploading documents: {e}")
+        else:
+            print("No chunks to upload from this batch.")
+
+        total_processed += len(events)
+        skip += len(events)
+        print(f"Total events processed so far: {total_processed}")
+
+    print(f"Bulk load complete. Processed {total_processed} events.")
 
 def process_legistar_bulk(max_matters: int = 500, batch_size: int = 50):
     """Main workflow to process Granicus Legistar matters in bulk."""
@@ -253,7 +381,12 @@ if __name__ == "__main__":
     import argparse
     parser_arg = argparse.ArgumentParser(description="Bulk ingest from Legistar")
     parser_arg.add_argument("--max_matters", type=int, default=1000, help="Maximum number of matters to process across all batches")
-    parser_arg.add_argument("--batch_size", type=int, default=50, help="Number of matters to fetch per API query")
+    parser_arg.add_argument("--max_events", type=int, default=1000, help="Maximum number of events to process across all batches")
+    parser_arg.add_argument("--batch_size", type=int, default=50, help="Number of items to fetch per API query")
     args = parser_arg.parse_args()
     
+    print("Starting Legistar Bulk Ingestion...")
+    print("\n--- Processing Events ---")
+    process_legistar_events(max_events=args.max_events, batch_size=args.batch_size)
+    print("\n--- Processing Matters ---")
     process_legistar_bulk(max_matters=args.max_matters, batch_size=args.batch_size)
