@@ -1,4 +1,5 @@
 import os
+import time
 import requests
 import tiktoken
 import fitz  # PyMuPDF
@@ -68,12 +69,36 @@ def generate_embedding(text: str, client: AzureOpenAI) -> list[float]:
     response = client.embeddings.create(input=[text], model=AZURE_OPENAI_EMBEDDING_DEPLOYMENT)
     return response.data[0].embedding
 
-def get_latest_watermark(search_client: SearchClient) -> str | None:
-    """Check Azure AI Search for the most recently published Legistar matter."""
+def get_indexed_urls(search_client: SearchClient) -> set[str]:
+    """Fetch all source_urls currently indexed from Legistar to avoid reprocessing."""
+    indexed_urls = set()
     try:
         results = search_client.search(
             search_text="*",
             filter="source_system eq 'Legistar'",
+            select=["source_url"]
+        )
+        for doc in results:
+            url = doc.get("source_url")
+            if url:
+                indexed_urls.add(url)
+        print(f"Loaded {len(indexed_urls)} already-indexed URLs to skip.")
+    except Exception as e:
+        print(f"Error fetching indexed URLs (index might be empty): {e}")
+    return indexed_urls
+
+def get_latest_watermark(search_client: SearchClient, is_event: bool = False) -> str | None:
+    """Check Azure AI Search for the most recently published Legistar document."""
+    filter_str = "source_system eq 'Legistar'"
+    if is_event:
+        filter_str += " and document_type ne 'Attachment'"
+    else:
+        filter_str += " and document_type eq 'Attachment'"
+        
+    try:
+        results = search_client.search(
+            search_text="*",
+            filter=filter_str,
             order_by=["date_published desc"],
             top=1,
             select=["date_published"]
@@ -95,9 +120,52 @@ def fetch_matters(watermark: str | None = None, limit: int = 5) -> list[dict]:
     else:
         print(f"Fetching {limit} latest matters from Legistar API...")
         
-    response = requests.get(url, params=params)
-    response.raise_for_status()
-    return response.json()
+    for attempt in range(3):
+        try:
+            response = requests.get(url, params=params)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.HTTPError as e:
+            if response.status_code == 429:
+                sleep_time = (attempt + 1) * 5
+                print(f"Rate limited. Waiting {sleep_time} seconds...")
+                time.sleep(sleep_time)
+            else:
+                print(f"Error fetching matters: {e}")
+                break
+        except Exception as e:
+             print(f"Error fetching matters: {e}")
+             break
+    return []
+
+def fetch_events(watermark: str | None = None, limit: int = 5) -> list[dict]:
+    """Fetch events from Legistar API, optionally newer than a watermark date."""
+    url = f"{LEGISTAR_API_BASE_URL}/{LEGISTAR_CLIENT_NAME}/Events"
+    params = {"$top": limit, "$orderby": "EventDate desc"}
+    if watermark:
+        legistar_date = watermark.replace("Z", "")
+        params["$filter"] = f"EventDate gt datetime'{legistar_date}'"
+        print(f"Fetching events newer than {legistar_date} from Legistar API...")
+    else:
+        print(f"Fetching {limit} latest events from Legistar API...")
+        
+    for attempt in range(3):
+        try:
+            response = requests.get(url, params=params)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.HTTPError as e:
+            if response.status_code == 429:
+                sleep_time = (attempt + 1) * 5
+                print(f"Rate limited. Waiting {sleep_time} seconds...")
+                time.sleep(sleep_time)
+            else:
+                print(f"Error fetching events: {e}")
+                break
+        except Exception as e:
+             print(f"Error fetching events: {e}")
+             break
+    return []
 
 def fetch_matter_attachments(matter_id: int) -> list[dict]:
     """Fetch attachments metadata for a specific matter."""
@@ -123,27 +191,133 @@ def fetch_matter_attachments(matter_id: int) -> list[dict]:
 
 def download_attachment(url: str) -> bytes | None:
     """Download attachment byte stream."""
-    response = requests.get(url)
-    if response.status_code == 200:
-        return response.content
+    for attempt in range(3):
+        try:
+            response = requests.get(url, timeout=30)
+            if response.status_code == 200:
+                return response.content
+            return None
+        except Exception as e:
+            print(f"Download attempt {attempt+1} failed: {e}")
+            time.sleep(2)
     return None
+
+def process_legistar_events(limit: int = 2):
+    """Main workflow to process Granicus Legistar events."""
+    openai_client = get_openai_client()
+    search_client = get_search_client()
+
+    watermark = get_latest_watermark(search_client, is_event=True)
+    if watermark:
+        print(f"Event High-water mark found: {watermark}")
+    else:
+        print("No Event high-water mark found. Fetching latest events.")
+
+    events = fetch_events(watermark=watermark, limit=limit)
+    if not events:
+        print("No new events found.")
+        return
+
+    indexed_urls = get_indexed_urls(search_client)
+    documents_to_upload = []
+
+    for event in events:
+        event_id = event.get("EventId")
+        title = event.get("EventBodyName", "Unknown Committee")
+        intro_date_str = event.get("EventDate")
+        
+        try:
+            if intro_date_str:
+                 dt = parser.parse(intro_date_str)
+                 if dt.tzinfo is None:
+                     dt = dt.replace(tzinfo=timezone.utc)
+                 date_published = dt.isoformat().replace("+00:00", "Z")
+                 year = dt.year
+            else:
+                 date_published = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+                 year = datetime.now(timezone.utc).year
+        except Exception:
+            date_published = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+            year = datetime.now(timezone.utc).year
+
+        print(f"Processing Event ID: {event_id} - {title[:50]}...")
+        
+        files_to_process = []
+        
+        agenda_file = event.get("EventAgendaFile")
+        if agenda_file:
+            files_to_process.append(("Agenda", agenda_file))
+            
+        minutes_file = event.get("EventMinutesFile")
+        if minutes_file:
+            files_to_process.append(("Minutes", minutes_file))
+            
+        for doc_label, download_url in files_to_process:
+            if not str(download_url).startswith("http"):
+                continue
+            
+            if download_url in indexed_urls:
+                print(f"    Skipped: {doc_label} is already indexed.")
+                continue
+            
+            print(f"    Downloading: {doc_label}...")
+            pdf_bytes = download_attachment(download_url)
+            if not pdf_bytes:
+                print(f"    Error: Failed to download {doc_label}")
+                continue
+
+            print(f"    Extracting text from {doc_label}...")
+            text = extract_text_from_pdf_bytes(pdf_bytes)
+            if not text:
+                print(f"    Warning: No text extracted from {doc_label}")
+                continue
+
+            chunks = chunk_text(text)
+            print(f"    Chunking complete: {len(chunks)} chunks generated.")
+            for chunk in chunks:
+                safe_title = f"{title[:450]} - {doc_label}" 
+                
+                doc = {
+                    "id": str(uuid.uuid4()),
+                    "chunk_text": chunk,
+                    "content_vector": generate_embedding(chunk, openai_client),
+                    "source_system": "Legistar",
+                    "document_type": f"Event {doc_label}",
+                    "matter_status": "Final",
+                    "year": year,
+                    "date_published": date_published,
+                    "title": safe_title,
+                    "source_url": download_url
+                }
+                documents_to_upload.append(doc)
+
+    if documents_to_upload:
+        print(f"Uploading {len(documents_to_upload)} event chunks to Azure Search...")
+        try:
+            results = search_client.upload_documents(documents=documents_to_upload)
+            print(f"Uploaded {len(results)} chunks successfully.")
+        except Exception as e:
+            print(f"Error uploading documents: {e}")
+    else:
+        print("No event chunks to upload.")
 
 def process_legistar_matters(limit: int = 2):
     """Main workflow to process Granicus Legistar matters."""
     openai_client = get_openai_client()
     search_client = get_search_client()
 
-    watermark = get_latest_watermark(search_client)
+    watermark = get_latest_watermark(search_client, is_event=False)
     if watermark:
-        print(f"High-water mark found: {watermark}")
+        print(f"Matter High-water mark found: {watermark}")
     else:
-        print("No high-water mark found. Fetching latest matters.")
+        print("No Matter high-water mark found. Fetching latest matters.")
 
     matters = fetch_matters(watermark=watermark, limit=limit)
     if not matters:
         print("No new matters found.")
         return
 
+    indexed_urls = get_indexed_urls(search_client)
     documents_to_upload = []
 
     for matter in matters:
@@ -188,6 +362,10 @@ def process_legistar_matters(limit: int = 2):
                 print(f"  Skipping attachment, no valid download link: {attachment_name}")
                 continue
 
+            if download_url in indexed_urls:
+                print(f"  Skipped: {attachment_name} is already indexed.")
+                continue
+
             print(f"  Downloading & chunking: {attachment_name}...")
 
             pdf_bytes = download_attachment(download_url)
@@ -230,7 +408,10 @@ def process_legistar_matters(limit: int = 2):
 if __name__ == "__main__":
     import argparse
     parser_arg = argparse.ArgumentParser(description="Ingest from Legistar")
-    parser_arg.add_argument("--limit", type=int, default=2, help="Number of matters to fetch for testing")
+    parser_arg.add_argument("--limit", type=int, default=2, help="Number of items to fetch for testing")
     args = parser_arg.parse_args()
     
+    print("--- Processing Worker Events ---")
+    process_legistar_events(limit=args.limit)
+    print("\n--- Processing Worker Matters ---")
     process_legistar_matters(limit=args.limit)
