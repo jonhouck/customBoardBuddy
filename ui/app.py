@@ -43,8 +43,45 @@ with st.sidebar:
     st.write("It searches official Metropolitan Water District of Southern California documents, board matters, and archives to answer your questions.")
 
 # Main Chat Interface
-st.title("BoardBuddy Assistant")
-st.markdown("Ask questions about MWD board matters, agendas, minutes, presentations, and historical documents.")
+col1, col2 = st.columns([0.75, 0.25])
+with col1:
+    st.title("BoardBuddy Assistant")
+    st.markdown("Ask questions about MWD board matters, agendas, minutes, presentations, and historical documents.")
+
+with col2:
+    st.write("") # Vertical spacing
+    st.write("")
+    
+    # Define limitations content
+    limitations_text = """
+**How it works**  
+BoardBuddy uses *Semantic Search*. When you ask a question, it searches the archives for paragraphs of text that share the same *meaning* as your question. It then hands these text snippets to the AI to read and summarize. 
+
+**Wait, what can't it do?**  
+Because it searches by *meaning* and not by *math*, BoardBuddy cannot perform database operations like sorting, calculating maximums, averages, or counting totals across thousands of documents. 
+For example, if you ask *"What was the most expensive item in 2023?"*, BoardBuddy cannot sort a database from highest to lowest. It will only locate a few documents that mention "costs" and "2023", and mistakenly guess the highest number it sees in that very small pile.
+
+**Tips for Best Results:**
+*   ✅ **DO** ask for summaries (e.g., *"What was the outcome of the Pure Water program vote?"*)
+*   ✅ **DO** ask for conceptual overviews (e.g., *"What are our policies regarding drought conservation?"*)
+*   ✅ **DO** ask to explain specific documents (e.g., *"Can you summarize the findings in the latest Delta Conveyance report?"*)
+*   ❌ **DON'T** ask for rankings (e.g., *"What was the most expensive project?"*)
+*   ❌ **DON'T** ask for exact calculations or tallies (e.g., *"How many board letters were approved last year?"*)
+    """
+    
+    # Use st.dialog for popup modal if available (Streamlit 1.34+), otherwise use popover
+    if hasattr(st, "dialog"):
+        @st.dialog("ℹ️ How to Use & Limitations")
+        def show_limitations():
+            st.markdown(limitations_text)
+
+        if st.button("How to Use & Limitations", use_container_width=True):
+            show_limitations()
+    else:
+        with st.popover("How to Use & Limitations", use_container_width=True):
+            st.markdown("### ℹ️ How to Use & Limitations")
+            st.markdown(limitations_text)
+
 
 # Initialize chat history
 if "messages" not in st.session_state:

@@ -84,3 +84,10 @@ When a user submits a plain-English query via the frontend:
 *   Build the Streamlit or Chainlit application.
 *   Connect it to the FastAPI backend.
 *   Render the chat interface, streaming text, and clickable source citations. Include an optional sidebar for users to manually force metadata filters (e.g., "Search only 2024").
+
+### Phase 7: Orchestrator Agent & Tool Calling (Aggregation Support)
+*   **Goal**: Address inherent limitations of Vector Similarity Search when answering math, aggregation (Min/Max/Sum), and exact-match questions.
+*   **Architecture Update**: Introduce an Agent Orchestrator (e.g., LangChain, LlamaIndex, or Microsoft Semantic Kernel) to intercept user queries before they hit Azure AI Search.
+*   **Dedicated Model**: Provision a specialized model deployment in Azure AI Foundry strictly for tool-calling (`gpt-4o-tool-caller` with temperature 0.0) to ensure high reliability and separate rate-limiting from conversational traffic.
+*   **Tool Creation**: Develop Python tools (functions) that the Orchestrator can call when it detects an aggregation question. For example, a tool that queries the Granicus Legistar API directly to retrieve, filter, and calculate the most expensive items in a given year.
+*   **Routing Logic**: The Orchestrator will determine the query intent. If semantic, route to the existing Azure AI Search Hybrid RAG pipeline. If structural/math, route to the Python tools.

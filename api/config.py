@@ -14,8 +14,8 @@ class Settings:
     AZURE_SEARCH_ENDPOINT = os.getenv("AZURE_SEARCH_SERVICE_ENDPOINT")
     AZURE_SEARCH_KEY = os.getenv("AZURE_SEARCH_ADMIN_KEY")
     AZURE_SEARCH_INDEX = os.getenv("AZURE_SEARCH_INDEX_NAME")
-    AZURE_SEARCH_TOP_K = int(os.getenv("AZURE_SEARCH_TOP_K", "15"))
-    AZURE_SEARCH_RETURN_K = int(os.getenv("AZURE_SEARCH_RETURN_K", "5"))
+    AZURE_SEARCH_TOP_K = int(os.getenv("AZURE_SEARCH_TOP_K", "100"))
+    AZURE_SEARCH_RETURN_K = int(os.getenv("AZURE_SEARCH_RETURN_K", "50"))
 
     # Azure OpenAI
     AZURE_OPENAI_API_KEY = os.getenv("AZURE_OPENAI_API_KEY")

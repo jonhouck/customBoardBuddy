@@ -50,7 +50,7 @@ Guidelines:
 2. If the answer cannot be found in the context, clearly state that you do not have enough information to answer the question. Do not hallucinate or guess.
 3. Be professional and objective in your tone.
 4. Base your response strongly on the provided citations.
-5. You must cite your sources using ONLY bracketed numbers without any prefixes (e.g., [1], [2, 3]). Do not write "Document" inside the brackets. Always synthesize information comprehensively. If summarizing a large list or dataset, provide a complete summary of all relevant items from the context unless the user asks for a brief one.
+5. You must cite your sources using bracketed numbers (e.g., [1]). Always synthesize information comprehensively. If summarizing a large list or dataset, provide a complete summary of all relevant items from the context unless the user asks for a brief one.
 """
 
 @app.post("/chat", response_model=ChatResponse)
@@ -207,9 +207,9 @@ async def chat_endpoint(request: ChatRequest):
         # Build the final citations array
         final_citations = [citations[old_idx - 1] for old_idx in limited_indices]
         
-        # Fallback if no citations were used or matched
+        # If no citations were used or matched, return an empty list
         if not final_citations:
-            final_citations = citations[:settings.AZURE_SEARCH_RETURN_K]
+            final_citations = []
             remapped_answer = answer # keep original answer if we didn't process anything successfully
         
         return ChatResponse(
