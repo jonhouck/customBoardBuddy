@@ -2,6 +2,8 @@ import os
 import requests
 import tiktoken
 import fitz  # PyMuPDF
+from PIL import Image
+import pytesseract
 import uuid
 import time
 from datetime import datetime, timezone
@@ -71,12 +73,28 @@ def get_search_client() -> SearchClient:
     return SearchClient(endpoint=AZURE_SEARCH_ENDPOINT, index_name=AZURE_SEARCH_INDEX_NAME, credential=credential)
 
 def extract_text_from_pdf_bytes(pdf_bytes: bytes) -> str:
-    """Extract text from PDF bytes using PyMuPDF."""
+    """Extract text from PDF bytes using PyMuPDF, with OCR fallback for scanned images."""
     text = ""
     try:
         doc = fitz.open(stream=pdf_bytes, filetype="pdf")
         for page in doc:
             text += page.get_text() + "\n"
+            
+        # If extraction is virtually empty (e.g. less than 15 valid characters), it's likely a scan
+        if len(text.strip()) < 15:
+            print("    Scan detected. Falling back to local OCR...")
+            ocr_text = ""
+            for i, page in enumerate(doc):
+                # Render page to an image
+                pix = page.get_pixmap(dpi=150) # Use 150 DPI for reasonable speed/readability balance
+                # Convert Pixmap to PIL Image
+                mode = "RGBA" if pix.alpha else "RGB"
+                img = Image.frombytes(mode, [pix.width, pix.height], pix.samples)
+                # Extract text mathematically from image
+                page_text = pytesseract.image_to_string(img)
+                ocr_text += page_text + "\n"
+            text = ocr_text
+            
     except Exception as e:
         print(f"Error extracting text from PDF: {e}")
     return text.strip()
@@ -134,7 +152,7 @@ def fetch_sharepoint_files_batch(token: str, url: str) -> tuple[list[dict], str 
          
     files = []
     for item in data.get("value", []):
-        if "file" in item and item.get("name", "").endswith(".pdf"):
+        if "file" in item and item.get("name", "").lower().endswith(".pdf"):
             files.append(item)
             
     next_link = data.get("@odata.nextLink")
@@ -175,10 +193,10 @@ def process_sharepoint_bulk(max_files: int = 1000, start_url: str | None = None)
 
     indexed_urls = get_indexed_urls(search_client)
 
-    url = start_url or f"https://graph.microsoft.com/v1.0/drives/{SHAREPOINT_DRIVE_ID}/root/children"
+    url = start_url or f"https://graph.microsoft.com/v1.0/drives/{SHAREPOINT_DRIVE_ID}/root/search(q='.pdf')"
     total_processed = 0
 
-    print(f"Starting bulk ingestion up to {max_files} PDF files from SharePoint drive {SHAREPOINT_DRIVE_ID}...")
+    print(f"Starting bulk ingestion up to {max_files} PDF files from SharePoint drive {SHAREPOINT_DRIVE_ID} using native PDF search...")
 
     while url and total_processed < max_files:
         print(f"Fetching SharePoint page... (Total processed so far: {total_processed})")
@@ -197,7 +215,7 @@ def process_sharepoint_bulk(max_files: int = 1000, start_url: str | None = None)
             url = next_url
             continue
         elif not files:
-            print("No more files found or API error limit reached.")
+            print("No more PDF files found or API error limit reached.")
             break
 
         documents_to_upload = []
