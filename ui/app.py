@@ -53,7 +53,7 @@ if "messages" not in st.session_state:
 # Display chat messages from history
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+        st.markdown(message["content"].replace("$", r"\$"))
         
         # Display citations if available
         if "citations" in message and message["citations"]:
@@ -75,7 +75,7 @@ if prompt := st.chat_input("Ask a question... (e.g., 'What was the budget for th
     
     # Display user message
     with st.chat_message("user"):
-        st.markdown(prompt)
+        st.markdown(prompt.replace("$", r"\$"))
 
     # Display assistant response
     with st.chat_message("assistant"):
@@ -105,7 +105,7 @@ if prompt := st.chat_input("Ask a question... (e.g., 'What was the budget for th
             citations = data.get("citations", [])
             
             # Display answer
-            message_placeholder.markdown(answer)
+            message_placeholder.markdown(answer.replace("$", r"\$"))
             
             # Record in session state
             st.session_state.messages.append({
