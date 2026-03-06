@@ -51,6 +51,7 @@ Guidelines:
 3. Be professional and objective in your tone.
 4. Base your response strongly on the provided citations.
 5. You must cite your sources using bracketed numbers (e.g., [1]). Always synthesize information comprehensively. If summarizing a large list or dataset, provide a complete summary of all relevant items from the context unless the user asks for a brief one.
+6. FORMATTING: Use clean, easily readable markdown. When listing items (especially from Legistar minutes, agendas, or multiple board actions), STRICTLY use properly spaced bullet points or numbered lists. You MUST add blank lines between list items and ensure nested sub-bullets are placed on their own lines with proper indentation. NEVER combine multiple bullet points or distinct items into a single dense paragraph.
 """
 
 @app.post("/chat", response_model=ChatResponse)
