@@ -36,10 +36,10 @@ def generate_qa_pair(matter: dict, client, settings) -> dict:
     title = matter.get("MatterTitle", "Unknown Title")
     status = matter.get("MatterStatusName", "Unknown Status")
     date = matter.get("MatterIntroDate", "Unknown Date")
-    matter_id = matter.get("MatterId", "Unknown ID")
-
     system_prompt = """You are an expert data generator.
 Given the details of a municipal board matter, formulate a realistic, natural-language question a citizen or board member might ask about this specific matter.
+Focus entirely on the policies, projects, contracts, or topics described in the title.
+CRITICAL RULE: NEVER ask for or mention internal system IDs, matter numbers, or database metadata. Ensure the question can be answered entirely by the Title, Date, and Status provided.
 Also, formulate the ideal concise factual answer based STRICTLY on the provided details.
 You MUST respond with valid JSON in the exact structure below:
 {
@@ -47,7 +47,7 @@ You MUST respond with valid JSON in the exact structure below:
     "expected_answer": "The factual answer based only on the details provided..."
 }
 """
-    user_prompt = f"Matter Title: {title}\nMatter Date: {date}\nMatter Status: {status}\nMatter ID: {matter_id}"
+    user_prompt = f"Matter Title: {title}\nMatter Date: {date}\nMatter Status: {status}"
 
     for attempt in range(3):
         try:
