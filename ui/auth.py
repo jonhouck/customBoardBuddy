@@ -71,6 +71,8 @@ def ensure_authenticated():
         if result and "id_token_claims" in result:
             # Successfully authenticated, save user info to session
             st.session_state["user"] = result.get("id_token_claims")
+            if "access_token" in result:
+                st.session_state["access_token"] = result.get("access_token")
             # Clear the query params to clean up the URL
             st.query_params.clear()
             st.rerun()
