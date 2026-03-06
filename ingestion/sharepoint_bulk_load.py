@@ -126,19 +126,22 @@ def ms_graph_request(url: str, token: str) -> dict | bytes | None:
     print("Maximum retries reached for MS Graph.")
     return None
 
-def fetch_sharepoint_files_batch(token: str, url: str) -> tuple[list[dict], str | None]:
-    """Fetch one page of file metadata from SharePoint Document Library."""
+def fetch_sharepoint_files_batch(token: str, url: str) -> tuple[list[dict], list[dict], str | None]:
+    """Fetch one page of file and folder metadata from SharePoint Document Library."""
     data = ms_graph_request(url, token)
     if not data or not isinstance(data, dict):
-        return [], None
+        return [], [], None
          
     files = []
+    folders = []
     for item in data.get("value", []):
-        if "file" in item and item.get("name", "").endswith(".pdf"):
+        if "file" in item and item.get("name", "").lower().endswith(".pdf"):
             files.append(item)
+        elif "folder" in item:
+            folders.append(item)
             
     next_link = data.get("@odata.nextLink")
-    return files, next_link
+    return files, folders, next_link
 
 def get_indexed_urls(search_client: SearchClient) -> set[str]:
     """Fetch all source_urls currently indexed from SharePoint to avoid reprocessing."""
@@ -175,12 +178,13 @@ def process_sharepoint_bulk(max_files: int = 1000, start_url: str | None = None)
 
     indexed_urls = get_indexed_urls(search_client)
 
-    url = start_url or f"https://graph.microsoft.com/v1.0/drives/{SHAREPOINT_DRIVE_ID}/root/children"
+    url_queue = [start_url or f"https://graph.microsoft.com/v1.0/drives/{SHAREPOINT_DRIVE_ID}/root/children"]
     total_processed = 0
 
     print(f"Starting bulk ingestion up to {max_files} PDF files from SharePoint drive {SHAREPOINT_DRIVE_ID}...")
 
-    while url and total_processed < max_files:
+    while url_queue and total_processed < max_files:
+        url = url_queue.pop(0)
         print(f"Fetching SharePoint page... (Total processed so far: {total_processed})")
         
         # Token refresh occasionally to prevent timeout on very long bulk loads
@@ -191,14 +195,18 @@ def process_sharepoint_bulk(max_files: int = 1000, start_url: str | None = None)
                  print("Failed to refresh token. Exiting.")
                  break
                  
-        files, next_url = fetch_sharepoint_files_batch(token, url)
+        files, folders, next_url = fetch_sharepoint_files_batch(token, url)
         
-        if not files and next_url:
-            url = next_url
+        if next_url:
+            url_queue.insert(0, next_url)
+            
+        for folder in folders:
+            folder_id = folder.get("id")
+            if folder_id:
+                url_queue.append(f"https://graph.microsoft.com/v1.0/drives/{SHAREPOINT_DRIVE_ID}/items/{folder_id}/children")
+                
+        if not files:
             continue
-        elif not files:
-            print("No more files found or API error limit reached.")
-            break
 
         documents_to_upload = []
 
@@ -275,8 +283,6 @@ def process_sharepoint_bulk(max_files: int = 1000, start_url: str | None = None)
                 print(f"Error uploading documents: {e}")
         else:
             print("No chunks to upload from this batch.")
-
-        url = next_url
 
     print(f"Bulk load complete. Processed {total_processed} files.")
 
