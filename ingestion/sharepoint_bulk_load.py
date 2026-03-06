@@ -2,6 +2,8 @@ import os
 import requests
 import tiktoken
 import fitz  # PyMuPDF
+from PIL import Image
+import pytesseract
 import uuid
 import time
 from datetime import datetime, timezone
@@ -71,12 +73,28 @@ def get_search_client() -> SearchClient:
     return SearchClient(endpoint=AZURE_SEARCH_ENDPOINT, index_name=AZURE_SEARCH_INDEX_NAME, credential=credential)
 
 def extract_text_from_pdf_bytes(pdf_bytes: bytes) -> str:
-    """Extract text from PDF bytes using PyMuPDF."""
+    """Extract text from PDF bytes using PyMuPDF, with OCR fallback for scanned images."""
     text = ""
     try:
         doc = fitz.open(stream=pdf_bytes, filetype="pdf")
         for page in doc:
             text += page.get_text() + "\n"
+            
+        # If extraction is virtually empty (e.g. less than 15 valid characters), it's likely a scan
+        if len(text.strip()) < 15:
+            print("    Scan detected. Falling back to local OCR...")
+            ocr_text = ""
+            for i, page in enumerate(doc):
+                # Render page to an image
+                pix = page.get_pixmap(dpi=150) # Use 150 DPI for reasonable speed/readability balance
+                # Convert Pixmap to PIL Image
+                mode = "RGBA" if pix.alpha else "RGB"
+                img = Image.frombytes(mode, [pix.width, pix.height], pix.samples)
+                # Extract text mathematically from image
+                page_text = pytesseract.image_to_string(img)
+                ocr_text += page_text + "\n"
+            text = ocr_text
+            
     except Exception as e:
         print(f"Error extracting text from PDF: {e}")
     return text.strip()
