@@ -110,10 +110,10 @@ for message in st.session_state.messages:
         if "citations" in message and message["citations"]:
             with st.expander(f"Sources ({len(message['citations'])})"):
                 for idx, cit in enumerate(message["citations"]):
-                    source_date = cit.get("date_published", "Unknown Date")
-                    doc_type = cit.get("document_type", "Document")
-                    title = cit.get("title", "Unknown Title")
-                    url = cit.get("url", "#")
+                    source_date = cit.get("date_published") or "Unknown Date"
+                    doc_type = cit.get("document_type") or "Document"
+                    title = cit.get("title") or "Unknown Title"
+                    url = cit.get("url") or "#"
                     
                     st.markdown(f"**[{idx+1}]** <a class='citation-link' href='{url}' target='_blank'>{title}</a>", unsafe_allow_html=True)
                     st.markdown(f"<div class='source-meta'>Type: {doc_type} | Date: {source_date}</div>", unsafe_allow_html=True)
