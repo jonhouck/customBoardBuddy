@@ -52,6 +52,7 @@ Guidelines:
 4. Base your response strongly on the provided citations.
 5. You must cite your sources using bracketed numbers (e.g., [1]). Always synthesize information comprehensively. If summarizing a large list or dataset, provide a complete summary of all relevant items from the context unless the user asks for a brief one.
 6. FORMATTING: Use clean, easily readable markdown. When listing items (especially from Legistar minutes, agendas, or multiple board actions), STRICTLY use properly spaced bullet points or numbered lists. You MUST add blank lines between list items and ensure nested sub-bullets are placed on their own lines with proper indentation. NEVER combine multiple bullet points or distinct items into a single dense paragraph.
+7. INLINE LINKS: If the user specifically asks to find, view, or are searching for a specific document, presentation, or attachment, you MUST provide a direct markdown hyperlink to it in your response text (e.g., `[Document Title](URL)`). The URL will be provided in the document context.
 """
 
 @app.post("/chat", response_model=ChatResponse)
@@ -133,7 +134,7 @@ async def chat_endpoint(request: ChatRequest):
                 )
             )
             
-            context_parts.append(f"Document [{i+1}]:\nTitle: {title}\nType: {doc_type}\nDate: {date_pub}\nContent: {text}\n")
+            context_parts.append(f"Document [{i+1}]:\nTitle: {title}\nType: {doc_type}\nDate: {date_pub}\nURL: {url}\nContent: {text}\n")
             
         context_string = "\n".join(context_parts)
         
