@@ -14,5 +14,10 @@
   - [x] Chunk, embed, and push SharePoint data to index
 - [x] **Phase 5: FastAPI RAG Backend**
   - [x] Build `/chat` endpoint and orchestration (`/api/main.py`)
-- [ ] **Phase 6: Frontend UI**
-  - [ ] Build Streamlit/Chainlit application (`/ui/app.py`)
+- [x] **Phase 6: Frontend UI**
+  - [x] Build Streamlit/Chainlit application (`/ui/app.py`)
+- [ ] **Phase 7: Orchestrator Agent & Tool Calling**
+  - [ ] Implement Orchestrator Agent pattern in backend (LangChain / LlamaIndex / Semantic Kernel)
+  - [ ] Provision dedicated 'gpt-4o-tool-caller' model in Azure AI Foundry
+  - [ ] Create Python Tool for retrieving and calculating aggregate Matter costs from Legistar API
+  - [ ] Update `/chat` endpoint to route requests to appropriate tools based on query intent
