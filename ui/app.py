@@ -48,8 +48,12 @@ user_avatar = fetch_profile_picture(access_token) or "👤"
 
 # Sidebar
 with st.sidebar:
-    st.title("💧 BoardBuddy")
-        
+    seal_path = os.path.join(os.path.dirname(__file__), "assets", "mwd_seal.png")
+    if os.path.exists(seal_path):
+        st.image(seal_path, use_container_width=True)
+    else:
+        st.title("💧 BoardBuddy")
+
     st.write(f"Welcome, **{user_name}**")
     if st.button("Sign Out"):
         logout()
@@ -66,13 +70,6 @@ with col1:
     st.markdown("Ask questions about MWD board matters, agendas, minutes, presentations, and historical documents.")
 
 with col2:
-    seal_path = os.path.join(os.path.dirname(__file__), "assets", "mwd_seal.png")
-    if os.path.exists(seal_path):
-        # Using columns to push the seal image to the right within col2
-        seal_col1, seal_col2 = st.columns([0.6, 0.4])
-        with seal_col2:
-            st.image(seal_path, use_container_width=True)
-    
     st.write("") # Vertical spacing
     st.write("")
     
