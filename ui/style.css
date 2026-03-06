@@ -3,92 +3,157 @@
 /* Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Prata&family=Roboto:wght@300;400;500&family=Roboto+Condensed:wght@400&display=swap');
 
-html, body, [class*="css"] {
+html,
+body,
+[class*="css"] {
     font-family: 'Roboto', sans-serif;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
     font-family: 'Prata', serif;
-    color: #1c2240; /* MWD Navy */
+    color: #1c2240;
+    /* MWD Navy */
 }
 
 /* Backgrounds */
 .stApp {
-    background-color: #ececec; /* MWD Silver */
+    background-color: #ececec;
+    /* MWD Silver */
 }
 
 .stSidebar {
-    background-color: #1c2240 !important; /* MWD Navy */
+    background-color: #1c2240 !important;
+    /* MWD Navy */
 }
-.stSidebar [data-testid="stMarkdownContainer"], 
-.stSidebar h1, .stSidebar h2, .stSidebar h3, .stSidebar p, .stSidebar span {
+
+.stSidebar [data-testid="stMarkdownContainer"],
+.stSidebar h1,
+.stSidebar h2,
+.stSidebar h3,
+.stSidebar p,
+.stSidebar span {
     color: #ffffff !important;
 }
 
-/* Chat Bubbles */
+/* Avatar overrides */
+[data-testid="stChatMessageAvatarAssistant"] {
+    background-color: #1c2240 !important;
+    /* MWD Navy */
+}
+
+[data-testid="stChatMessageAvatarUser"] {
+    background-color: #4795ff !important;
+    /* MWD Blue 1 */
+}
+
+/* Chat Bubbles - Flat Dimensional Shading */
 [data-testid="stChatMessage"] {
     background-color: #ffffff;
-    border: 1px solid #5a5b5d; /* MWD Slate */
-    border-radius: 8px;
+    border: 2px solid #5a5b5d;
+    /* MWD Slate */
+    border-radius: 4px;
+    /* Primitive geometric form */
     padding: 1rem;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 4px 4px 0px rgba(28, 34, 64, 0.15);
+    /* Flat dimensional shading in MWD Navy */
 }
 
 [data-testid="stChatMessage"][data-baseweb="card"]:nth-child(odd) {
-    background-color: #ececec; /* MWD Silver */
-    border: 1px solid #c6deff; /* MWD Blue 3 */
+    background-color: #f8f9fa;
+    /* Slightly off-white for contrast instead of MWD silver to keep UI clean */
+    border: 2px solid #c6deff;
+    /* MWD Blue 3 */
+    box-shadow: 4px 4px 0px rgba(71, 149, 255, 0.15);
+    /* Flat dimensional shading in Blue 1 */
 }
 
 [data-testid="stChatMessage"] * {
-    color: #1c2240; /* MWD Navy */
+    color: #1c2240;
+    /* MWD Navy */
 }
 
 /* Buttons */
-.stButton > button {
-    background-color: #4795ff !important; /* MWD Blue 1 */
+.stButton>button {
+    background-color: #4795ff !important;
+    /* MWD Blue 1 */
     color: #ffffff !important;
-    border: none;
+    border: 2px solid #1c2240 !important;
+    /* Navy border for structure */
     border-radius: 4px;
+    /* Square/primitive */
     font-weight: 500;
-    transition: background-color 0.3s ease;
+    transition: all 0.2s ease;
+    box-shadow: 3px 3px 0px rgba(28, 34, 64, 0.2);
 }
 
-.stButton > button:hover {
-    background-color: #80b9f5 !important; /* MWD Blue 2 */
+.stButton>button:hover {
+    background-color: #80b9f5 !important;
+    /* MWD Blue 2 */
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0px rgba(28, 34, 64, 0.2);
 }
 
-.stButton > button:active {
-    background-color: #ba4d01 !important; /* MWD Orange 1 */
+.stButton>button:active {
+    background-color: #ba4d01 !important;
+    /* MWD Orange 1 */
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0px rgba(28, 34, 64, 0.2);
 }
 
 /* Highlights & Alerts */
 .stAlert {
-    border-left-color: #ba4d01 !important; /* MWD Orange 1 */
+    border: 2px solid #ba4d01 !important;
+    /* MWD Orange 1 */
+    border-left-width: 6px !important;
+    border-radius: 4px;
+    box-shadow: 3px 3px 0px rgba(186, 77, 1, 0.15);
 }
+
 [data-testid="stNotification"] {
-    background-color: #ff9475 !important; /* MWD Red 2 */
+    background-color: #ff9475 !important;
+    /* MWD Red 2 */
     color: #1c2240 !important;
+    border: 2px solid #1c2240 !important;
+    border-radius: 4px;
+    box-shadow: 3px 3px 0px rgba(28, 34, 64, 0.2);
 }
 
 /* Citations & Pills */
 .citation-link {
-    background-color: #c6deff; /* MWD Blue 3 */
+    background-color: #c6deff;
+    /* MWD Blue 3 */
     color: #1c2240;
-    padding: 2px 6px;
-    border-radius: 12px;
+    padding: 4px 10px;
+    border: 1px solid #4795ff;
+    /* MWD Blue 1 */
+    border-radius: 4px;
+    /* Geometric shape */
     font-size: 0.85em;
+    font-weight: 500;
     text-decoration: none;
     display: inline-block;
-    margin: 2px;
+    margin: 4px 4px 4px 0;
+    transition: background-color 0.2s ease;
+    box-shadow: 2px 2px 0px rgba(71, 149, 255, 0.2);
 }
 
 .citation-link:hover {
-    background-color: #80b9f5; /* MWD Blue 2 */
+    background-color: #80b9f5;
+    /* MWD Blue 2 */
     color: #ffffff;
+    border-color: #1c2240;
 }
 
 .source-meta {
     font-size: 0.8em;
-    color: #5a5b5d; /* MWD Slate */
-    margin-bottom: 4px;
+    color: #5a5b5d;
+    /* MWD Slate */
+    margin-bottom: 6px;
+    font-family: 'Roboto Condensed', sans-serif;
 }

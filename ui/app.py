@@ -29,10 +29,31 @@ if not ensure_authenticated():
 
 user = st.session_state["user"]
 user_name = user.get("name", "MWD User")
+access_token = st.session_state.get("access_token")
+
+@st.cache_data(show_spinner=False)
+def fetch_profile_picture(token):
+    if not token:
+        return None
+    try:
+        headers = {"Authorization": f"Bearer {token}"}
+        resp = requests.get("https://graph.microsoft.com/v1.0/me/photo/$value", headers=headers, timeout=2)
+        if resp.status_code == 200:
+            return resp.content
+    except Exception:
+        pass
+    return None
+
+user_avatar = fetch_profile_picture(access_token) or "👤"
 
 # Sidebar
 with st.sidebar:
-    st.title("💧 BoardBuddy")
+    seal_path = os.path.join(os.path.dirname(__file__), "assets", "mwd_seal.png")
+    if os.path.exists(seal_path):
+        st.image(seal_path, use_container_width=True)
+    else:
+        st.title("💧 BoardBuddy")
+
     st.write(f"Welcome, **{user_name}**")
     if st.button("Sign Out"):
         logout()
@@ -69,18 +90,10 @@ For example, if you ask *"What was the most expensive item in 2023?"*, BoardBudd
 *   ❌ **DON'T** ask for exact calculations or tallies (e.g., *"How many board letters were approved last year?"*)
     """
     
-    # Use st.dialog for popup modal if available (Streamlit 1.34+), otherwise use popover
-    if hasattr(st, "dialog"):
-        @st.dialog("ℹ️ How to Use & Limitations")
-        def show_limitations():
-            st.markdown(limitations_text)
-
-        if st.button("How to Use & Limitations", use_container_width=True):
-            show_limitations()
-    else:
-        with st.popover("How to Use & Limitations", use_container_width=True):
-            st.markdown("### ℹ️ How to Use & Limitations")
-            st.markdown(limitations_text)
+    # Use st.popover instead of a button/dialog to prevent rerunning the script and killing background RAG processes
+    with st.popover("How to Use & Limitations", use_container_width=True):
+        st.markdown("### ℹ️ How to Use & Limitations")
+        st.markdown(limitations_text)
 
 
 # Initialize chat history
@@ -89,7 +102,8 @@ if "messages" not in st.session_state:
 
 # Display chat messages from history
 for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
+    avatar_val = user_avatar if message["role"] == "user" else "💧"
+    with st.chat_message(message["role"], avatar=avatar_val):
         st.markdown(message["content"].replace("$", r"\$"))
         
         # Display citations if available
@@ -111,11 +125,11 @@ if prompt := st.chat_input("Ask a question... (e.g., 'What was the budget for th
     st.session_state.messages.append({"role": "user", "content": prompt})
     
     # Display user message
-    with st.chat_message("user"):
+    with st.chat_message("user", avatar=user_avatar):
         st.markdown(prompt.replace("$", r"\$"))
 
     # Display assistant response
-    with st.chat_message("assistant"):
+    with st.chat_message("assistant", avatar="💧"):
         message_placeholder = st.empty()
         message_placeholder.markdown("Thinking... ⏳")
         
