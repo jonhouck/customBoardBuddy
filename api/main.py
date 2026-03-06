@@ -193,9 +193,9 @@ async def chat_endpoint(request: ChatRequest):
         # Build the final citations array
         final_citations = [citations[old_idx - 1] for old_idx in limited_indices]
         
-        # Fallback if no citations were used or matched
+        # If no citations were used or matched, return an empty list
         if not final_citations:
-            final_citations = citations[:settings.AZURE_SEARCH_RETURN_K]
+            final_citations = []
             remapped_answer = answer # keep original answer if we didn't process anything successfully
         
         return ChatResponse(
