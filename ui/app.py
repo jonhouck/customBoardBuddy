@@ -93,18 +93,10 @@ For example, if you ask *"What was the most expensive item in 2023?"*, BoardBudd
 *   ❌ **DON'T** ask for exact calculations or tallies (e.g., *"How many board letters were approved last year?"*)
     """
     
-    # Use st.dialog for popup modal if available (Streamlit 1.34+), otherwise use popover
-    if hasattr(st, "dialog"):
-        @st.dialog("ℹ️ How to Use & Limitations")
-        def show_limitations():
-            st.markdown(limitations_text)
-
-        if st.button("How to Use & Limitations", use_container_width=True):
-            show_limitations()
-    else:
-        with st.popover("How to Use & Limitations", use_container_width=True):
-            st.markdown("### ℹ️ How to Use & Limitations")
-            st.markdown(limitations_text)
+    # Use st.popover instead of a button/dialog to prevent rerunning the script and killing background RAG processes
+    with st.popover("How to Use & Limitations", use_container_width=True):
+        st.markdown("### ℹ️ How to Use & Limitations")
+        st.markdown(limitations_text)
 
 
 # Initialize chat history
