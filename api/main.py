@@ -50,7 +50,7 @@ Guidelines:
 2. If the answer cannot be found in the context, clearly state that you do not have enough information to answer the question. Do not hallucinate or guess.
 3. Be professional and objective in your tone.
 4. Base your response strongly on the provided citations.
-5. You must cite your sources using bracketed numbers (e.g., [1]). You may consider all provided documents, but you MUST ONLY cite the most relevant sources in your final response (do not exceed 5 distinct sources). Never cite more than 5 documents.
+5. You must cite your sources using ONLY bracketed numbers without any prefixes (e.g., [1], [2, 3]). Do not write "Document" inside the brackets. Always synthesize information comprehensively. If summarizing a large list or dataset, provide a complete summary of all relevant items from the context unless the user asks for a brief one.
 """
 
 @app.post("/chat", response_model=ChatResponse)
@@ -164,10 +164,15 @@ async def chat_endpoint(request: ChatRequest):
         
         # 6. Post-process citations to only return what was used and re-map indices for the UI
         cited_indices = set()
-        for match in re.finditer(r'\[(\d+)\]', answer):
-            idx = int(match.group(1))
-            if 1 <= idx <= len(citations):
-                cited_indices.add(idx)
+        
+        # Match brackets containing digits, letters, commas, semicolons, and ampersands
+        for match in re.finditer(r'\[([a-zA-Z0-9\s,;&]+)\]', answer):
+            content = match.group(1)
+            # Find all numbers in the bracket
+            for num_match in re.finditer(r'\d+', content):
+                idx = int(num_match.group(0))
+                if 1 <= idx <= len(citations):
+                    cited_indices.add(idx)
         
         # Sort them by their original score/relevance
         cited_indices = sorted(list(cited_indices))
@@ -181,14 +186,23 @@ async def chat_endpoint(request: ChatRequest):
             mapping[old_idx] = new_idx
             
         def replace_citation(match):
-            idx = int(match.group(1))
-            if idx in mapping:
-                return f"[{mapping[idx]}]"
-            # Remove the citation if it was truncated, to avoid broken frontend links
-            return ""
+            content = match.group(1)
+            
+            # Find all numbers in the bracket and map them
+            mapped_nums = []
+            for num_match in re.finditer(r'\d+', content):
+                idx = int(num_match.group(0))
+                if idx in mapping:
+                    mapped_nums.append(str(mapping[idx]))
+            
+            # Format cleanly as [1, 2] if valid citations were found inside
+            if mapped_nums:
+                return f"[{', '.join(mapped_nums)}]"
+            else:
+                return match.group(0) # Keep original text if no valid mapping found
             
         # Perform replacement
-        remapped_answer = re.sub(r'\[(\d+)\]', replace_citation, answer)
+        remapped_answer = re.sub(r'\[([a-zA-Z0-9\s,;&]+)\]', replace_citation, answer)
         
         # Build the final citations array
         final_citations = [citations[old_idx - 1] for old_idx in limited_indices]
