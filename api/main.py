@@ -53,7 +53,7 @@ Guidelines:
 5. CITATIONS: You must cite your sources using bracketed numbers corresponding to the Document index (e.g., [1], [2]).
 6. HISTORY IS FOR CONTEXT ONLY: Do NOT use facts, citations, or document numbers from the conversation history to answer the current question. The conversation history contains old reference numbers; ignore them. Only use the documents provided in the immediate "Context information" block.
 7. FORMATTING: Use clean, easily readable markdown. When listing items, STRICTLY use properly spaced bullet points or numbered lists. Add blank lines between list items and ensure nested sub-bullets are placed on their own lines. NEVER combine distinct items into a single dense paragraph.
-8. INLINE LINKS (CRITICAL): Whenever you refer to a specific document, presentation, or attachment from the context, you MUST create an inline markdown link using its URL. Do not tell the user you "can provide a link if needed"—just provide it immediately inline. Format: `[Document Title](URL)`.
+8. INLINE LINKS: ONLY provide inline markdown links (`[Document Title](URL)`) if the user explicitly asks you to provide a document or link. Otherwise, strictly use bracketed numbers like [1] for citations, which will be rendered in a separate sources tab.
 """
 
 @app.post("/chat", response_model=ChatResponse)
@@ -154,7 +154,7 @@ async def chat_endpoint(request: ChatRequest):
         # Append the final prompt with context
         messages.append({
             "role": "user", 
-            "content": f"Context information is below.\n---------------------\n{context_string}\n---------------------\nIMPORTANT RULES:\n1. ONLY use the context above to answer the question. Do NOT rely on facts or old citations from the conversation history.\n2. You MUST provide direct inline markdown links `[Title](URL)` for any documents you mention. Do not ask the user if they want the link.\n\nQuestion: {query}"
+            "content": f"Context information is below.\n---------------------\n{context_string}\n---------------------\nIMPORTANT RULES:\n1. ONLY use the context above to answer the question. Do NOT rely on facts or old citations from the conversation history.\n2. ONLY provide direct inline markdown links `[Title](URL)` if the user explicitly asks for the document or link. Otherwise, prefer bracketed numbers like [1] for citations.\n\nQuestion: {query}"
         })
         
         # 5. Generate Response using o3-mini
@@ -168,8 +168,8 @@ async def chat_endpoint(request: ChatRequest):
         # 6. Post-process citations to only return what was used and re-map indices for the UI
         cited_indices = set()
         
-        # Match brackets containing digits, letters, commas, semicolons, and ampersands
-        for match in re.finditer(r'\[([a-zA-Z0-9\s,;&]+)\]', answer):
+        # Match brackets containing strictly numbers and separators
+        for match in re.finditer(r'\[(\d+(?:\s*[,;&]\s*\d+)*)\]', answer):
             content = match.group(1)
             # Find all numbers in the bracket
             for num_match in re.finditer(r'\d+', content):
@@ -205,7 +205,7 @@ async def chat_endpoint(request: ChatRequest):
                 return match.group(0) # Keep original text if no valid mapping found
             
         # Perform replacement
-        remapped_answer = re.sub(r'\[([a-zA-Z0-9\s,;&]+)\]', replace_citation, answer)
+        remapped_answer = re.sub(r'\[(\d+(?:\s*[,;&]\s*\d+)*)\]', replace_citation, answer)
         
         # Build the final citations array
         final_citations = [citations[old_idx - 1] for old_idx in limited_indices]
