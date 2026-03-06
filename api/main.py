@@ -50,7 +50,7 @@ Guidelines:
 2. If the answer cannot be found in the context, clearly state that you do not have enough information to answer the question. Do not hallucinate or guess.
 3. Be professional and objective in your tone.
 4. Base your response strongly on the provided citations.
-5. You must cite your sources using bracketed numbers (e.g., [1]). You may consider all provided documents, but you MUST ONLY cite the most relevant sources in your final response (do not exceed 5 distinct sources). Never cite more than 5 documents.
+5. You must cite your sources using bracketed numbers (e.g., [1]). Always synthesize information comprehensively. If summarizing a large list or dataset, provide a complete summary of all relevant items from the context unless the user asks for a brief one.
 """
 
 @app.post("/chat", response_model=ChatResponse)
