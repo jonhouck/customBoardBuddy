@@ -115,7 +115,12 @@ async def chat_endpoint(request: ChatRequest):
         citations = []
         context_parts = []
         
+        # Limit the number of chunks passed to the LLM context to prevent "Lost in the Middle" hallucination
+        MAX_LLM_CONTEXT_CHUNKS = 15
+        
         for i, result in enumerate(search_results):
+            if i >= MAX_LLM_CONTEXT_CHUNKS:
+                break
             score = result.get("@search.score", 0)
             text = result.get("chunk_text", "")
             title = result.get("title", "Unknown Title")
