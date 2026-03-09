@@ -312,53 +312,97 @@ def process_legistar_events(limit: int = 2):
                 }
                 documents_to_upload.append(doc)
 
-            # Process Event Items for Actions & Votes
+            # Process Event Items for Actions, Votes & Attachments
             event_url = f"https://mwdh2o.legistar.com/MeetingDetail.aspx?ID={event_id}&GUID={event.get('EventGuid', '')}"
-            if event_url in indexed_urls:
-                print(f"    Skipped: Votes & Actions already indexed.")
-            else:
-                print(f"    Fetching EventItems for votes and actions...")
-                event_items = fetch_event_items(event_id)
-                if event_items:
-                    vote_texts = []
-                    for item in event_items:
-                        item_title = item.get("EventItemTitle", "")
-                        action_name = item.get("EventItemActionName", "No Action")
-                        passed = item.get("EventItemPassedFlagName", "")
-                        roll_call = item.get("EventItemRollCallFlag", 0)
-                        
-                        if item_title and action_name:
-                            vote_text = f"Agenda Item: {item_title}\nAction: {action_name}"
-                            if passed:
-                                vote_text += f"\nPassed: {passed}"
-                            if roll_call:
-                                vote_text += f"\nRoll Call Done"
-                            vote_texts.append(vote_text)
+            
+            print(f"    Fetching EventItems for votes and attachments...")
+            event_items = fetch_event_items(event_id)
+            if event_items:
+                vote_texts = []
+                for item in event_items:
+                    # 1. Process EventItem Attachments (e.g. Board Letters, Presentations)
+                    attachments = item.get("EventItemMatterAttachments", [])
+                    if attachments:
+                        for attachment in attachments:
+                            attachment_name = attachment.get("MatterAttachmentName", "Unknown Attachment")
+                            file_name = attachment.get("MatterAttachmentFileName", "")
+                            download_url = attachment.get("MatterAttachmentHyperlink", "")
+                            
+                            if not str(file_name).lower().endswith(".pdf") or not str(download_url).startswith("http"):
+                                continue
+                                
+                            if download_url in indexed_urls:
+                                print(f"      Skipped EventItem Attachment: {attachment_name} is already indexed.")
+                                continue
+                                
+                            print(f"      Downloading EventItem Attachment: {attachment_name}...")
+                            pdf_bytes = download_attachment(download_url)
+                            if not pdf_bytes:
+                                continue
+                                
+                            text = extract_text_from_pdf_bytes(pdf_bytes)
+                            if not text:
+                                continue
+                                
+                            chunks = chunk_text(text)
+                            print(f"      Chunking complete: {len(chunks)} chunks generated.")
+                            safe_title = f"{title[:400]} - {attachment_name}" 
+                            for chunk in chunks:
+                                doc = {
+                                    "id": str(uuid.uuid4()),
+                                    "chunk_text": chunk,
+                                    "content_vector": generate_embedding(chunk, openai_client),
+                                    "source_system": "Legistar",
+                                    "document_type": "Event Attachment",
+                                    "matter_status": "Final",
+                                    "year": year,
+                                    "date_published": date_published,
+                                    "title": safe_title,
+                                    "source_url": download_url
+                                }
+                                documents_to_upload.append(doc)
+
+                    # 2. Process Votes
+                    item_title = item.get("EventItemTitle", "")
+                    action_name = item.get("EventItemActionName", "No Action")
+                    passed = item.get("EventItemPassedFlagName", "")
+                    roll_call = item.get("EventItemRollCallFlag", 0)
                     
-                    if vote_texts:
-                        combined_votes = "\n\n---\n\n".join(vote_texts)
-                        chunks = chunk_text(combined_votes)
-                        print(f"    Chunking complete: {len(chunks)} chunks generated from votes.")
-                        safe_title = f"{title[:450]} - Votes & Actions" 
+                    if item_title and action_name:
+                        vote_text = f"Agenda Item: {item_title}\nAction: {action_name}"
+                        if passed:
+                            vote_text += f"\nPassed: {passed}"
+                        if roll_call:
+                            vote_text += f"\nRoll Call Done"
+                        vote_texts.append(vote_text)
+                
+                # Only insert votes if they haven't been indexed for this event
+                if event_url in indexed_urls:
+                    print(f"    Skipped: Votes & Actions already indexed.")
+                elif vote_texts:
+                    combined_votes = "\n\n---\n\n".join(vote_texts)
+                    chunks = chunk_text(combined_votes)
+                    print(f"    Chunking complete: {len(chunks)} chunks generated from votes.")
+                    safe_title = f"{title[:450]} - Votes & Actions" 
                         
-                        for chunk in chunks:
-                            doc = {
-                                "id": str(uuid.uuid4()),
-                                "chunk_text": chunk,
-                                "content_vector": generate_embedding(chunk, openai_client),
-                                "source_system": "Legistar",
-                                "document_type": "Event Votes & Actions",
-                                "matter_status": "Final",
-                                "year": year,
-                                "date_published": date_published,
-                                "title": safe_title,
-                                "source_url": event_url
-                            }
-                            documents_to_upload.append(doc)
-                    else:
-                        print(f"    No actionable votes found.")
+                    for chunk in chunks:
+                        doc = {
+                            "id": str(uuid.uuid4()),
+                            "chunk_text": chunk,
+                            "content_vector": generate_embedding(chunk, openai_client),
+                            "source_system": "Legistar",
+                            "document_type": "Event Votes & Actions",
+                            "matter_status": "Final",
+                            "year": year,
+                            "date_published": date_published,
+                            "title": safe_title,
+                            "source_url": event_url
+                        }
+                        documents_to_upload.append(doc)
                 else:
-                    print(f"    No EventItems found.")
+                    print(f"    No actionable votes found.")
+            else:
+                print(f"    No EventItems found.")
 
     if documents_to_upload:
         print(f"Uploading {len(documents_to_upload)} event chunks to Azure Search...")
