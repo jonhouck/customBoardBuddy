@@ -270,45 +270,52 @@ def process_legistar_events(max_events: int = 500, batch_size: int = 50):
                     documents_to_upload.append(doc)
 
             # Process Event Items for Actions & Votes
-            print(f"    Fetching EventItems for votes and actions...")
-            event_items = fetch_event_items(event_id)
-            if event_items:
-                vote_texts = []
-                for item in event_items:
-                    item_title = item.get("EventItemTitle", "")
-                    action_name = item.get("EventItemActionName", "No Action")
-                    passed = item.get("EventItemPassedFlagName", "")
-                    roll_call = item.get("EventItemRollCallFlag", 0)
+            event_url = f"https://mwdh2o.legistar.com/MeetingDetail.aspx?ID={event_id}&GUID={event.get('EventGuid', '')}"
+            if event_url in indexed_urls:
+                print(f"    Skipped: Votes & Actions already indexed.")
+            else:
+                print(f"    Fetching EventItems for votes and actions...")
+                event_items = fetch_event_items(event_id)
+                if event_items:
+                    vote_texts = []
+                    for item in event_items:
+                        item_title = item.get("EventItemTitle", "")
+                        action_name = item.get("EventItemActionName", "No Action")
+                        passed = item.get("EventItemPassedFlagName", "")
+                        roll_call = item.get("EventItemRollCallFlag", 0)
+                        
+                        if item_title and action_name:
+                            vote_text = f"Agenda Item: {item_title}\nAction: {action_name}"
+                            if passed:
+                                vote_text += f"\nPassed: {passed}"
+                            if roll_call:
+                                vote_text += f"\nRoll Call Done"
+                            vote_texts.append(vote_text)
                     
-                    if item_title and action_name:
-                        vote_text = f"Agenda Item: {item_title}\nAction: {action_name}"
-                        if passed:
-                            vote_text += f"\nPassed: {passed}"
-                        if roll_call:
-                            vote_text += f"\nRoll Call Done"
-                        vote_texts.append(vote_text)
-                
-                if vote_texts:
-                    combined_votes = "\n\n---\n\n".join(vote_texts)
-                    chunks = chunk_text(combined_votes)
-                    safe_title = f"{title[:450]} - Votes & Actions" 
-                    # create a deep link to the meeting details if available, else granicus root
-                    event_url = f"https://mwdh2o.legistar.com/MeetingDetail.aspx?ID={event_id}&GUID={event.get('EventGuid', '')}"
-                    
-                    for chunk in chunks:
-                        doc = {
-                            "id": str(uuid.uuid4()),
-                            "chunk_text": chunk,
-                            "content_vector": generate_embedding(chunk, openai_client),
-                            "source_system": "Legistar",
-                            "document_type": "Event Votes & Actions",
-                            "matter_status": "Final",
-                            "year": year,
-                            "date_published": date_published,
-                            "title": safe_title,
-                            "source_url": event_url
-                        }
-                        documents_to_upload.append(doc)
+                    if vote_texts:
+                        combined_votes = "\n\n---\n\n".join(vote_texts)
+                        chunks = chunk_text(combined_votes)
+                        print(f"    Chunking complete: {len(chunks)} chunks generated from votes.")
+                        safe_title = f"{title[:450]} - Votes & Actions" 
+                        
+                        for chunk in chunks:
+                            doc = {
+                                "id": str(uuid.uuid4()),
+                                "chunk_text": chunk,
+                                "content_vector": generate_embedding(chunk, openai_client),
+                                "source_system": "Legistar",
+                                "document_type": "Event Votes & Actions",
+                                "matter_status": "Final",
+                                "year": year,
+                                "date_published": date_published,
+                                "title": safe_title,
+                                "source_url": event_url
+                            }
+                            documents_to_upload.append(doc)
+                    else:
+                        print(f"    No actionable votes found.")
+                else:
+                    print(f"    No EventItems found.")
 
         if documents_to_upload:
             print(f"Uploading {len(documents_to_upload)} chunks to Azure Search from batch...")
