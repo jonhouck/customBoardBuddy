@@ -189,6 +189,27 @@ def fetch_matter_attachments(matter_id: int) -> list[dict]:
             time.sleep(2)
     return []
 
+def fetch_event_items(event_id: int) -> list[dict]:
+    """Fetch event items (votes and actions) for a specific event."""
+    url = f"{LEGISTAR_API_BASE_URL}/{LEGISTAR_CLIENT_NAME}/Events/{event_id}/EventItems"
+    for attempt in range(3):
+        try:
+            response = requests.get(url, timeout=30)
+            if response.status_code == 200:
+                return response.json()
+            elif response.status_code == 429:
+                import time
+                sleep_time = (attempt + 1) * 5
+                print(f"  Rate limited fetching items. Waiting {sleep_time} seconds...")
+                time.sleep(sleep_time)
+            else:
+                break
+        except Exception as e:
+            import time
+            print(f"  Error fetching event items (attempt {attempt+1}): {e}")
+            time.sleep(2)
+    return []
+
 def download_attachment(url: str) -> bytes | None:
     """Download attachment byte stream."""
     for attempt in range(3):
@@ -290,6 +311,54 @@ def process_legistar_events(limit: int = 2):
                     "source_url": download_url
                 }
                 documents_to_upload.append(doc)
+
+            # Process Event Items for Actions & Votes
+            event_url = f"https://mwdh2o.legistar.com/MeetingDetail.aspx?ID={event_id}&GUID={event.get('EventGuid', '')}"
+            if event_url in indexed_urls:
+                print(f"    Skipped: Votes & Actions already indexed.")
+            else:
+                print(f"    Fetching EventItems for votes and actions...")
+                event_items = fetch_event_items(event_id)
+                if event_items:
+                    vote_texts = []
+                    for item in event_items:
+                        item_title = item.get("EventItemTitle", "")
+                        action_name = item.get("EventItemActionName", "No Action")
+                        passed = item.get("EventItemPassedFlagName", "")
+                        roll_call = item.get("EventItemRollCallFlag", 0)
+                        
+                        if item_title and action_name:
+                            vote_text = f"Agenda Item: {item_title}\nAction: {action_name}"
+                            if passed:
+                                vote_text += f"\nPassed: {passed}"
+                            if roll_call:
+                                vote_text += f"\nRoll Call Done"
+                            vote_texts.append(vote_text)
+                    
+                    if vote_texts:
+                        combined_votes = "\n\n---\n\n".join(vote_texts)
+                        chunks = chunk_text(combined_votes)
+                        print(f"    Chunking complete: {len(chunks)} chunks generated from votes.")
+                        safe_title = f"{title[:450]} - Votes & Actions" 
+                        
+                        for chunk in chunks:
+                            doc = {
+                                "id": str(uuid.uuid4()),
+                                "chunk_text": chunk,
+                                "content_vector": generate_embedding(chunk, openai_client),
+                                "source_system": "Legistar",
+                                "document_type": "Event Votes & Actions",
+                                "matter_status": "Final",
+                                "year": year,
+                                "date_published": date_published,
+                                "title": safe_title,
+                                "source_url": event_url
+                            }
+                            documents_to_upload.append(doc)
+                    else:
+                        print(f"    No actionable votes found.")
+                else:
+                    print(f"    No EventItems found.")
 
     if documents_to_upload:
         print(f"Uploading {len(documents_to_upload)} event chunks to Azure Search...")
