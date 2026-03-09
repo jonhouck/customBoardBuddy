@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
-from azure.search.documents.models import VectorizedQuery
+from azure.search.documents.models import VectorizedQuery, QueryType
 import logging
 import re
 
@@ -107,7 +107,9 @@ async def chat_endpoint(request: ChatRequest):
             search_text=search_query,
             vector_queries=[vector_query],
             select=["id", "chunk_text", "title", "source_url", "document_type", "date_published"],
-            top=settings.AZURE_SEARCH_TOP_K
+            top=settings.AZURE_SEARCH_TOP_K,
+            query_type=QueryType.SEMANTIC,
+            semantic_configuration_name="boardbuddy-semantic-config"
         )
         
         citations = []
@@ -124,6 +126,10 @@ async def chat_endpoint(request: ChatRequest):
             # Format date to string if present
             if date_pub:
                 date_pub = str(date_pub)
+                
+            # Sanitize URL to prevent 404s due to unencoded spaces
+            if url:
+                url = url.replace(" ", "%20")
                 
             citations.append(
                 Citation(
