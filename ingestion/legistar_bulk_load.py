@@ -378,7 +378,10 @@ def process_legistar_events(max_events: int = 500, batch_size: int = 50):
         if documents_to_upload:
             print(f"Uploading {len(documents_to_upload)} chunks to Azure Search from batch...")
             try:
-                search_client.upload_documents(documents=documents_to_upload)
+                batch_limit = 500
+                for i in range(0, len(documents_to_upload), batch_limit):
+                    batch = documents_to_upload[i:i + batch_limit]
+                    search_client.upload_documents(documents=batch)
                 print("Uploaded successfully.")
             except Exception as e:
                 print(f"Error uploading documents: {e}")
@@ -486,7 +489,10 @@ def process_legistar_bulk(max_matters: int = 500, batch_size: int = 50):
         if documents_to_upload:
             print(f"Uploading {len(documents_to_upload)} chunks to Azure Search from batch...")
             try:
-                search_client.upload_documents(documents=documents_to_upload)
+                batch_limit = 500
+                for i in range(0, len(documents_to_upload), batch_limit):
+                    batch = documents_to_upload[i:i + batch_limit]
+                    search_client.upload_documents(documents=batch)
                 print("Uploaded successfully.")
             except Exception as e:
                 print(f"Error uploading documents: {e}")
