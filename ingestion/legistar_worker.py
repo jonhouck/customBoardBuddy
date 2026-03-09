@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 from dateutil import parser
 from dotenv import load_dotenv
 
+import openai
 from openai import AzureOpenAI
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
@@ -66,6 +67,19 @@ def chunk_text(text: str, model_name="cl100k_base", chunk_size: int = 800, overl
 
 def generate_embedding(text: str, client: AzureOpenAI) -> list[float]:
     """Generate vector embedding for a given text."""
+    for attempt in range(5):
+        try:
+            response = client.embeddings.create(input=[text], model=AZURE_OPENAI_EMBEDDING_DEPLOYMENT)
+            return response.data[0].embedding
+        except openai.RateLimitError:
+            sleep_time = (2 ** attempt) + 2  # 3, 4, 6, 10, 18 seconds
+            print(f"    OpenAI Rate limit reached (429). Waiting {sleep_time} seconds before retry...")
+            time.sleep(sleep_time)
+        except Exception as e:
+            print(f"    Error generating embedding: {e}. Retrying in 5 seconds...")
+            time.sleep(5)
+            
+    # Final attempt that will raise the exception if it fails
     response = client.embeddings.create(input=[text], model=AZURE_OPENAI_EMBEDDING_DEPLOYMENT)
     return response.data[0].embedding
 
