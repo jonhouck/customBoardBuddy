@@ -190,7 +190,7 @@ def get_indexed_urls(search_client: SearchClient) -> set[str]:
         print(f"Error fetching indexed URLs (index might be empty): {e}")
     return indexed_urls
 
-def process_sharepoint_bulk(max_files: int = 1000, start_url: str | None = None):
+def process_sharepoint_bulk(max_files: int = 1000, batch_size: int = 50, start_url: str | None = None):
     """Main workflow to process historical SharePoint documents in bulk."""
     
     if not SHAREPOINT_DRIVE_ID:
@@ -232,84 +232,89 @@ def process_sharepoint_bulk(max_files: int = 1000, start_url: str | None = None)
             print("No more PDF files found or API error limit reached.")
             break
 
-        documents_to_upload = []
+        for i in range(0, len(files), batch_size):
+            batch_files = files[i:i + batch_size]
+            documents_to_upload = []
 
-        for f in files:
+            for f in batch_files:
+                if total_processed >= max_files:
+                    break
+                    
+                file_id = f.get("id")
+                title = f.get("name", "Untitled")
+                web_url = f.get("webUrl", f"sharepoint_{file_id}")
+            
+                # Idempotency check 
+                if web_url in indexed_urls:
+                    print(f"Skipping already-indexed file: {title}")
+                    total_processed += 1
+                    continue
+    
+                # Convert createdDateTime to Azure Search format
+                created_at_str = f.get("createdDateTime")
+                try:
+                     dt = parser.parse(created_at_str)
+                     if dt.tzinfo is None:
+                         dt = dt.replace(tzinfo=timezone.utc)
+                     date_published = dt.isoformat().replace("+00:00", "Z")
+                     year = dt.year
+                except Exception:
+                     date_published = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+                     year = datetime.now(timezone.utc).year
+    
+                print(f"Processing File ID: {file_id} - {title[:50]}...")
+                
+                # Fetch actual file content bytes
+                download_url = f"https://graph.microsoft.com/v1.0/drives/{SHAREPOINT_DRIVE_ID}/items/{file_id}/content"
+                pdf_bytes = ms_graph_request(download_url, token)
+                
+                if not pdf_bytes or isinstance(pdf_bytes, dict):
+                    print(f"  Failed to download bytes for {title}.")
+                    total_processed += 1
+                    continue
+    
+                print("  Extracting text...")
+                text = extract_text_from_pdf_bytes(pdf_bytes)
+                if not text:
+                    print("  No text extracted (scanned PDF or empty).")
+                    total_processed += 1
+                    continue
+    
+                chunks = chunk_text(text)
+                print(f"  Generated {len(chunks)} chunks.")
+                
+                for chunk in chunks:
+                    doc = {
+                        "id": str(uuid.uuid4()),
+                        "chunk_text": chunk,
+                        "content_vector": generate_embedding(chunk, openai_client),
+                        "source_system": "SharePoint",
+                        "document_type": "Historical Document",
+                        "matter_status": "Unknown", 
+                        "year": year,
+                        "date_published": date_published,
+                        "title": title[:500],
+                        "source_url": web_url
+                    }
+                    documents_to_upload.append(doc)
+                    
+                total_processed += 1
+
+            if documents_to_upload:
+                print(f"Uploading {len(documents_to_upload)} chunks to Azure Search from batch...")
+                try:
+                    upload_batch_limit = 500
+                    for j in range(0, len(documents_to_upload), upload_batch_limit):
+                        batch_chunk = documents_to_upload[j:j + upload_batch_limit]
+                        search_client.upload_documents(documents=batch_chunk)
+                    print("Uploaded successfully.")
+                except Exception as e:
+                    print(f"Error uploading documents: {e}")
+            else:
+                print("No chunks to upload from this batch.")
+                
             if total_processed >= max_files:
                 break
-                
-            file_id = f.get("id")
-            title = f.get("name", "Untitled")
-            web_url = f.get("webUrl", f"sharepoint_{file_id}")
-            
-            # Idempotency check 
-            if web_url in indexed_urls:
-                print(f"Skipping already-indexed file: {title}")
-                total_processed += 1
-                continue
-
-            # Convert createdDateTime to Azure Search format
-            created_at_str = f.get("createdDateTime")
-            try:
-                 dt = parser.parse(created_at_str)
-                 if dt.tzinfo is None:
-                     dt = dt.replace(tzinfo=timezone.utc)
-                 date_published = dt.isoformat().replace("+00:00", "Z")
-                 year = dt.year
-            except Exception:
-                 date_published = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
-                 year = datetime.now(timezone.utc).year
-
-            print(f"Processing File ID: {file_id} - {title[:50]}...")
-            
-            # Fetch actual file content bytes
-            download_url = f"https://graph.microsoft.com/v1.0/drives/{SHAREPOINT_DRIVE_ID}/items/{file_id}/content"
-            pdf_bytes = ms_graph_request(download_url, token)
-            
-            if not pdf_bytes or isinstance(pdf_bytes, dict):
-                print(f"  Failed to download bytes for {title}.")
-                total_processed += 1
-                continue
-
-            print("  Extracting text...")
-            text = extract_text_from_pdf_bytes(pdf_bytes)
-            if not text:
-                print("  No text extracted (scanned PDF or empty).")
-                total_processed += 1
-                continue
-
-            chunks = chunk_text(text)
-            print(f"  Generated {len(chunks)} chunks.")
-            
-            for chunk in chunks:
-                doc = {
-                    "id": str(uuid.uuid4()),
-                    "chunk_text": chunk,
-                    "content_vector": generate_embedding(chunk, openai_client),
-                    "source_system": "SharePoint",
-                    "document_type": "Historical Document",
-                    "matter_status": "Unknown", 
-                    "year": year,
-                    "date_published": date_published,
-                    "title": title[:500],
-                    "source_url": web_url
-                }
-                documents_to_upload.append(doc)
-                
-            total_processed += 1
-
-        if documents_to_upload:
-            print(f"Uploading {len(documents_to_upload)} chunks to Azure Search from batch...")
-            try:
-                batch_limit = 500
-                for i in range(0, len(documents_to_upload), batch_limit):
-                    batch = documents_to_upload[i:i + batch_limit]
-                    search_client.upload_documents(documents=batch)
-                print("Uploaded successfully.")
-            except Exception as e:
-                print(f"Error uploading documents: {e}")
-        else:
-            print("No chunks to upload from this batch.")
 
         url = next_url
 
@@ -319,6 +324,7 @@ if __name__ == "__main__":
     import argparse
     parser_arg = argparse.ArgumentParser(description="Bulk ingest historical documents from SharePoint")
     parser_arg.add_argument("--max_files", type=int, default=1000, help="Maximum number of files to process")
+    parser_arg.add_argument("--batch_size", type=int, default=50, help="Number of files to process before uploading to Azure Search")
     args = parser_arg.parse_args()
     
-    process_sharepoint_bulk(max_files=args.max_files)
+    process_sharepoint_bulk(max_files=args.max_files, batch_size=args.batch_size)
