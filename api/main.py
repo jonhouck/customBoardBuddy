@@ -151,7 +151,7 @@ async def chat_endpoint(request: ChatRequest):
         context_string = "\n".join(context_parts)
         
         # 4. Construct the prompt for the LLM
-        messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+        messages = [{"role": "developer", "content": SYSTEM_PROMPT}]
         
         # Inject conversation history
         if request.history:
@@ -171,7 +171,8 @@ async def chat_endpoint(request: ChatRequest):
         # 5. Generate Response using o3-mini
         completion = openai_client.chat.completions.create(
             model=settings.AZURE_OPENAI_CHAT_DEPLOYMENT,
-            messages=messages
+            messages=messages,
+            max_completion_tokens=5000
         )
         
         answer = completion.choices[0].message.content
