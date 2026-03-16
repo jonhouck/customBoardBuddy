@@ -76,6 +76,7 @@ def get_search_client() -> SearchClient:
 def extract_text_from_pdf_bytes(pdf_bytes: bytes) -> str:
     """Extract text from PDF bytes using PyMuPDF, with OCR fallback for scanned images."""
     text = ""
+    doc = None
     try:
         doc = fitz.open(stream=pdf_bytes, filetype="pdf")
         for page in doc:
@@ -94,10 +95,18 @@ def extract_text_from_pdf_bytes(pdf_bytes: bytes) -> str:
                 # Extract text mathematically from image
                 page_text = pytesseract.image_to_string(img)
                 ocr_text += page_text + "\n"
+                
+                # Explicitly clean up large image resources
+                img.close()
+                pix = None
             text = ocr_text
             
     except Exception as e:
         print(f"Error extracting text from PDF: {e}")
+    finally:
+        if doc:
+            doc.close()
+            
     return text.strip()
 
 def chunk_text(text: str, model_name="cl100k_base", chunk_size: int = 800, overlap: int = 150) -> list[str]:
@@ -275,6 +284,10 @@ def process_sharepoint_bulk(max_files: int = 1000, batch_size: int = 50, start_u
     
                 print("  Extracting text...")
                 text = extract_text_from_pdf_bytes(pdf_bytes)
+                
+                # Delete large byte payload immediately after use to prevent memory swelling
+                del pdf_bytes
+                
                 if not text:
                     print("  No text extracted (scanned PDF or empty).")
                     total_processed += 1
