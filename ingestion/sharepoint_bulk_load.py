@@ -302,14 +302,22 @@ def process_sharepoint_bulk(max_files: int = 1000, batch_size: int = 50, start_u
 
             if documents_to_upload:
                 print(f"Uploading {len(documents_to_upload)} chunks to Azure Search from batch...")
-                try:
-                    upload_batch_limit = 500
-                    for j in range(0, len(documents_to_upload), upload_batch_limit):
-                        batch_chunk = documents_to_upload[j:j + upload_batch_limit]
-                        search_client.upload_documents(documents=batch_chunk)
-                    print("Uploaded successfully.")
-                except Exception as e:
-                    print(f"Error uploading documents: {e}")
+                upload_batch_limit = 100
+                for j in range(0, len(documents_to_upload), upload_batch_limit):
+                    batch_chunk = documents_to_upload[j:j + upload_batch_limit]
+                    for attempt in range(5):
+                        try:
+                            search_client.upload_documents(documents=batch_chunk)
+                            break
+                        except Exception as e:
+                            print(f"    Error uploading batch chunk (attempt {attempt+1}): {e}")
+                            if attempt == 4:
+                                print("    Failed to upload chunk after maximum retries.")
+                            else:
+                                sleep_time = (2 ** attempt) + 2
+                                print(f"    Waiting {sleep_time}s before retry...")
+                                time.sleep(sleep_time)
+                print("Finished uploading chunks from this batch.")
             else:
                 print("No chunks to upload from this batch.")
                 
