@@ -35,14 +35,18 @@ However, you **must** configure the App Service Configuration settings so your a
 
 ### In the Azure Portal for BOTH App Services (API and UI):
 1. Navigate to the App Service.
-2. Go to **Settings > Configuration**.
-3. Under **Application settings**, click **New application setting**.
-4. You need to add key-value pairs that reference your Key Vault secrets. 
+2. In the left-hand menu, under **Settings**, select **Environment variables**.
+3. Under the **App settings** tab, click **+ Add**.
+4. You need to add key-value pairs that reference your Key Vault secrets. For each secret in your Key Vault:
     *   **Name:** (The name of your environment variable from your `.env` file, e.g., `AZURE_OPENAI_API_KEY`)
     *   **Value:** `@Microsoft.KeyVault(SecretUri=https://kv-boardbuddy-dev.vault.azure.net/secrets/[YOUR-SECRET-NAME]/)`
         *(Replace `[YOUR-SECRET-NAME]` with the dashed version of the secret name you created in the Key Vault, e.g., `AZURE-OPENAI-API-KEY`)*
-5. **CRITICAL FOR UI APP SERVICE**: You must add one setting that does not come from Key Vault.
+5. **CRITICAL FOR PYTHON CI/CD**: You must add one setting to tell Azure's deployment engine (Oryx) to install dependencies when it receives the zip file from GitHub Actions.
+    *   **Name:** `SCM_DO_BUILD_DURING_DEPLOYMENT`
+    *   **Value:** `true`
+6. **CRITICAL FOR UI APP SERVICE ONLY**: You must add one setting that does not come from Key Vault.
     *   **Name:** `API_URL`
     *   **Value:** `https://app-boardbuddy-api-dev-hxdqhdamdxayasg6.westus3-01.azurewebsites.net/chat`
+7. Click **Apply** at the bottom of the "Add/Edit" pane, and then **Apply** again at the bottom of the main "Environment variables" page to save.
 
 If you haven't already, please commit the new workflow files (`.github/workflows/deploy-api.yml` and `.github/workflows/deploy-ui.yml`) and push them to the repository to trigger the first deployment.
