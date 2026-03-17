@@ -104,8 +104,11 @@ def extract_text_from_pdf_bytes(pdf_bytes: bytes) -> str:
     except Exception as e:
         print(f"Error extracting text from PDF: {e}")
     finally:
-        if doc:
-            doc.close()
+        if doc is not None:
+            try:
+                doc.close()
+            except Exception:
+                pass
             
     return text.strip()
 
