@@ -1,0 +1,36 @@
+name: Deploy Backend API to Azure App Service
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'api/**'
+      - 'ingestion/**'
+      - 'requirements.txt'
+      - '.github/workflows/deploy-api.yml'
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python version
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Create release zip
+        run: |
+          zip -r release.zip ./* -x "*.git*" -x "*.venv*" -x "*__pycache__*" -x "*.pytest_cache*"
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'app-boardbuddy-api-dev'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_API }}
+          package: release.zip
