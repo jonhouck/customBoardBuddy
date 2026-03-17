@@ -54,6 +54,7 @@ Guidelines:
 6. HISTORY IS FOR CONTEXT ONLY: Do NOT use facts, citations, or document numbers from the conversation history to answer the current question. The conversation history contains old reference numbers; ignore them. Only use the documents provided in the immediate "Context information" block.
 7. FORMATTING: Use clean, easily readable markdown. When listing items, STRICTLY use properly spaced bullet points or numbered lists. Add blank lines between list items and ensure nested sub-bullets are placed on their own lines. NEVER combine distinct items into a single dense paragraph.
 8. INLINE LINKS: ONLY provide inline markdown links (`[Document Title](URL)`) if the user explicitly asks you to provide a document or link. Otherwise, strictly use bracketed numbers like [1] for citations, which will be rendered in a separate sources tab.
+9. PRIORITIZE PRIMARY DOCUMENTS: When answering questions about what items went to the board or related to meeting details, prioritize referencing primary documents (like "Agenda" or "Meeting Minutes") over simple "Attachment" files if both are available in the context.
 """
 
 @app.post("/chat", response_model=ChatResponse)
@@ -118,11 +119,20 @@ async def chat_endpoint(request: ChatRequest):
         # Limit the number of chunks passed to the LLM context to prevent "Lost in the Middle" hallucination
         MAX_LLM_CONTEXT_CHUNKS = 15
         
-        for i, result in enumerate(search_results):
-            if i >= MAX_LLM_CONTEXT_CHUNKS:
+        unique_docs = {}
+        chunks_processed = 0
+        
+        for result in search_results:
+            if chunks_processed >= MAX_LLM_CONTEXT_CHUNKS:
                 break
-            score = result.get("@search.score", 0)
+                
             text = result.get("chunk_text", "")
+            if not text:
+                continue
+                
+            chunks_processed += 1
+            
+            score = result.get("@search.score", 0)
             title = result.get("title", "Unknown Title")
             url = result.get("source_url")
             doc_type = result.get("document_type", "Unknown")
@@ -136,17 +146,26 @@ async def chat_endpoint(request: ChatRequest):
             if url:
                 url = url.replace(" ", "%20")
                 
-            citations.append(
-                Citation(
-                    title=title,
-                    url=url,
-                    document_type=doc_type,
-                    date_published=date_pub,
-                    content=text
-                )
-            )
+            doc_key = url if url else title
             
-            context_parts.append(f"Document [{i+1}]:\nTitle: {title}\nType: {doc_type}\nDate: {date_pub}\nURL: {url}\nContent: {text}\n")
+            if doc_key in unique_docs:
+                idx = unique_docs[doc_key]
+                citations[idx].content += f"\n\n... {text}"
+            else:
+                new_idx = len(citations)
+                unique_docs[doc_key] = new_idx
+                citations.append(
+                    Citation(
+                        title=title,
+                        url=url,
+                        document_type=doc_type,
+                        date_published=date_pub,
+                        content=text
+                    )
+                )
+                
+        for i, cit in enumerate(citations):
+            context_parts.append(f"Document [{i+1}]:\nTitle: {cit.title}\nType: {cit.document_type}\nDate: {cit.date_published}\nURL: {cit.url}\nContent: {cit.content}\n")
             
         context_string = "\n".join(context_parts)
         
