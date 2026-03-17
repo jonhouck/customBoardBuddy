@@ -6,6 +6,8 @@ from PIL import Image
 import pytesseract
 import uuid
 import time
+import json
+import gc
 from datetime import datetime, timezone
 from dateutil import parser
 from dotenv import load_dotenv
@@ -28,6 +30,8 @@ GRAPH_SCOPE = ["https://graph.microsoft.com/.default"]
 # SharePoint Settings
 SHAREPOINT_SITE_ID = os.getenv("SHAREPOINT_SITE_ID")
 SHAREPOINT_DRIVE_ID = os.getenv("SHAREPOINT_DRIVE_ID")
+
+INGESTION_STATE_FILE = "ingestion_state.json"
 
 # Azure Search Settings
 AZURE_SEARCH_ENDPOINT = os.getenv("AZURE_SEARCH_SERVICE_ENDPOINT")
@@ -73,6 +77,22 @@ def get_search_client() -> SearchClient:
     credential = AzureKeyCredential(AZURE_SEARCH_ADMIN_KEY)
     return SearchClient(endpoint=AZURE_SEARCH_ENDPOINT, index_name=AZURE_SEARCH_INDEX_NAME, credential=credential)
 
+def load_ingestion_state() -> dict:
+    if os.path.exists(INGESTION_STATE_FILE):
+        try:
+            with open(INGESTION_STATE_FILE, 'r') as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Error loading state file: {e}")
+    return {}
+
+def save_ingestion_state(state: dict):
+    try:
+        with open(INGESTION_STATE_FILE, 'w') as f:
+            json.dump(state, f, indent=2)
+    except Exception as e:
+        print(f"Error saving state file: {e}")
+
 def extract_text_from_pdf_bytes(pdf_bytes: bytes) -> str:
     """Extract text from PDF bytes using PyMuPDF, with OCR fallback for scanned images."""
     text = ""
@@ -98,7 +118,9 @@ def extract_text_from_pdf_bytes(pdf_bytes: bytes) -> str:
                 
                 # Explicitly clean up large image resources
                 img.close()
+                del img
                 pix = None
+                del page
             text = ocr_text
             
     except Exception as e:
@@ -107,8 +129,10 @@ def extract_text_from_pdf_bytes(pdf_bytes: bytes) -> str:
         if doc is not None:
             try:
                 doc.close()
+                del doc
             except Exception:
                 pass
+        gc.collect()
             
     return text.strip()
 
@@ -218,6 +242,9 @@ def process_sharepoint_bulk(max_files: int = 1000, batch_size: int = 50, start_u
     search_client = get_search_client()
 
     indexed_urls = get_indexed_urls(search_client)
+    
+    # Load local state
+    ingestion_state = load_ingestion_state()
 
     url = start_url or f"https://graph.microsoft.com/v1.0/drives/{SHAREPOINT_DRIVE_ID}/root/search(q='.pdf')"
     total_processed = 0
@@ -257,8 +284,8 @@ def process_sharepoint_bulk(max_files: int = 1000, batch_size: int = 50, start_u
                 web_url = f.get("webUrl", f"sharepoint_{file_id}")
             
                 # Idempotency check 
-                if web_url in indexed_urls:
-                    print(f"Skipping already-indexed file: {title}")
+                if web_url in indexed_urls or web_url in ingestion_state:
+                    print(f"Skipping already-indexed file (or recorded in state): {title}")
                     total_processed += 1
                     continue
     
@@ -282,6 +309,7 @@ def process_sharepoint_bulk(max_files: int = 1000, batch_size: int = 50, start_u
                 
                 if not pdf_bytes or isinstance(pdf_bytes, dict):
                     print(f"  Failed to download bytes for {title}.")
+                    ingestion_state[web_url] = {"status": "failed_download"}
                     total_processed += 1
                     continue
     
@@ -293,7 +321,9 @@ def process_sharepoint_bulk(max_files: int = 1000, batch_size: int = 50, start_u
                 
                 if not text:
                     print("  No text extracted (scanned PDF or empty).")
+                    ingestion_state[web_url] = {"status": "empty"}
                     total_processed += 1
+                    gc.collect()
                     continue
     
                 chunks = chunk_text(text)
@@ -314,7 +344,13 @@ def process_sharepoint_bulk(max_files: int = 1000, batch_size: int = 50, start_u
                     }
                     documents_to_upload.append(doc)
                     
+                ingestion_state[web_url] = {"status": "processed", "chunks": len(chunks)}
                 total_processed += 1
+                
+                # Cleanup per doc to prevent memory leaks from chunking and strings
+                del text
+                del chunks
+                gc.collect()
 
             if documents_to_upload:
                 print(f"Uploading {len(documents_to_upload)} chunks to Azure Search from batch...")
@@ -337,6 +373,9 @@ def process_sharepoint_bulk(max_files: int = 1000, batch_size: int = 50, start_u
             else:
                 print("No chunks to upload from this batch.")
                 
+            # Save state after batch
+            save_ingestion_state(ingestion_state)
+            
             if total_processed >= max_files:
                 break
 
