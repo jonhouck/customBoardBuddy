@@ -134,7 +134,9 @@ if prompt := st.chat_input("Ask a question... (e.g., 'What was the budget for th
         message_placeholder.markdown("Thinking... ⏳")
         
         # Prepare request payload
-        api_url = "http://localhost:8000/chat"
+        api_url = os.getenv("API_URL", "http://localhost:8000")
+        if not api_url.endswith("/chat"):
+            api_url = api_url.rstrip("/") + "/chat"
         
         # Filter history to only include role and content (drop massive citations array)
         filtered_history = [
