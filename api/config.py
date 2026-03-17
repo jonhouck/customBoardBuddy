@@ -14,8 +14,24 @@ class Settings:
     AZURE_SEARCH_ENDPOINT = os.getenv("AZURE_SEARCH_SERVICE_ENDPOINT")
     AZURE_SEARCH_KEY = os.getenv("AZURE_SEARCH_ADMIN_KEY")
     AZURE_SEARCH_INDEX = os.getenv("AZURE_SEARCH_INDEX_NAME")
-    AZURE_SEARCH_TOP_K = int(os.getenv("AZURE_SEARCH_TOP_K", "100"))
-    AZURE_SEARCH_RETURN_K = int(os.getenv("AZURE_SEARCH_RETURN_K", "50"))
+    
+    @classmethod
+    def get_int_env(cls, key: str, default: int) -> int:
+        val = os.getenv(key)
+        if not val:
+            return default
+        try:
+            return int(val)
+        except ValueError:
+            return default
+
+    @property
+    def AZURE_SEARCH_TOP_K(self):
+        return self.get_int_env("AZURE_SEARCH_TOP_K", 100)
+        
+    @property
+    def AZURE_SEARCH_RETURN_K(self):
+        return self.get_int_env("AZURE_SEARCH_RETURN_K", 50)
 
     # Azure OpenAI
     AZURE_OPENAI_API_KEY = os.getenv("AZURE_OPENAI_API_KEY")
