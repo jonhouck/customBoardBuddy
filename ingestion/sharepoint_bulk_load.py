@@ -107,8 +107,16 @@ def extract_text_from_pdf_bytes(pdf_bytes: bytes) -> str:
             print("    Scan detected. Falling back to local OCR...")
             ocr_text = ""
             for i, page in enumerate(doc):
+                # Calculate zoom to prevent OOM on massive architectural scans/blueprints
+                zoom = 150 / 72
+                if page.rect.width * zoom > 2500:
+                    zoom = 2500 / page.rect.width
+                if page.rect.height * zoom > 3500:
+                    zoom = min(zoom, 3500 / page.rect.height)
+                mat = fitz.Matrix(zoom, zoom)
+                
                 # Render page to an image
-                pix = page.get_pixmap(dpi=150) # Use 150 DPI for reasonable speed/readability balance
+                pix = page.get_pixmap(matrix=mat)
                 # Convert Pixmap to PIL Image
                 mode = "RGBA" if pix.alpha else "RGB"
                 img = Image.frombytes(mode, [pix.width, pix.height], pix.samples)
@@ -121,6 +129,7 @@ def extract_text_from_pdf_bytes(pdf_bytes: bytes) -> str:
                 del img
                 pix = None
                 del page
+                gc.collect()
             text = ocr_text
             
     except Exception as e:
