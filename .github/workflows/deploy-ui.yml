@@ -23,9 +23,15 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Install dependencies into antenv
+        run: |
+          python -m venv antenv
+          source antenv/bin/activate
+          pip install -r requirements.txt
+
       - name: Create release zip
         run: |
-          zip -r release.zip ./* -x "*.git*" -x "*.venv*" -x "*__pycache__*" -x "*.pytest_cache*"
+          zip -r release.zip ./* -x "*.git*" -x ".venv/*" -x "*__pycache__*" -x "*.pytest_cache*"
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
