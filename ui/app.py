@@ -1,15 +1,40 @@
 import streamlit as st
 import requests
 import os
+import difflib
+import html
 from dotenv import load_dotenv
 from auth import ensure_authenticated, logout
+
+def highlight_verbatim_quotes(source_text: str, answer_text: str, min_match_length: int = 30) -> str:
+    """Highlights verbatim quotes from the answer within the source text."""
+    if not source_text or not answer_text:
+        return html.escape(source_text) if source_text else ""
+        
+    matcher = difflib.SequenceMatcher(None, source_text.lower(), answer_text.lower())
+    blocks = matcher.get_matching_blocks()
+    
+    highlighted = ""
+    last_idx = 0
+    
+    for block in blocks:
+        if block.n >= min_match_length:
+            # Escape the unhighlighted part
+            highlighted += html.escape(source_text[last_idx:block.i])
+            # Escape the matched part and wrap in styling span using MWD Orange 1
+            match_text = html.escape(source_text[block.i:block.i + block.n])
+            highlighted += f'<span style="color: #ba4d01; font-weight: bold;">{match_text}</span>'
+            last_idx = block.i + block.n
+            
+    highlighted += html.escape(source_text[last_idx:])
+    return highlighted.replace('\n', '<br>')
 
 # Load environment variables
 load_dotenv()
 
 # Page configuration
 st.set_page_config(
-    page_title="BoardBuddy RAG",
+    page_title="BoardBuddy",
     page_icon="💧",
     layout="wide"
 )
@@ -123,7 +148,8 @@ for message in st.session_state.messages:
                     st.markdown(f"<div class='source-meta'>Type: {doc_type} | Date: {source_date}</div>", unsafe_allow_html=True)
                     if cit.get("content"):
                         with st.expander("Show relevant text"):
-                            st.write(cit.get("content"))
+                            highlighted_text = highlight_verbatim_quotes(cit.get("content"), message.get("content", ""))
+                            st.markdown(highlighted_text, unsafe_allow_html=True)
 
 # Accept user input
 if prompt := st.chat_input("Ask a question... (e.g., 'What was the budget for the Pure Water project in 2023?')"):
