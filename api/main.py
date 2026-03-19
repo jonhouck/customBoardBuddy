@@ -1,7 +1,7 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict
 from azure.search.documents.models import VectorizedQuery, QueryType
 import logging
 import re
@@ -113,12 +113,11 @@ async def chat_endpoint(request: ChatRequest):
             semantic_configuration_name="boardbuddy-semantic-config"
         )
         
-        total_chunks = 0
         MAX_LLM_CONTEXT_CHUNKS = 30
         unique_docs = {}
-        
-        unique_docs = {}
         chunks_processed = 0
+        citations = []
+        context_parts = []
         
         for result in search_results:
             if chunks_processed >= MAX_LLM_CONTEXT_CHUNKS:
@@ -130,7 +129,7 @@ async def chat_endpoint(request: ChatRequest):
                 
             chunks_processed += 1
             
-            score = result.get("@search.score", 0)
+
             title = result.get("title", "Unknown Title")
             url = result.get("source_url")
             doc_type = result.get("document_type", "Unknown")
