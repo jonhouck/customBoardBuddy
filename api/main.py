@@ -54,6 +54,7 @@ Guidelines:
 6. HISTORY IS FOR CONTEXT ONLY: Do NOT use facts, citations, or document numbers from the conversation history to answer the current question. The conversation history contains old reference numbers; ignore them. Only use the documents provided in the immediate "Context information" block.
 7. FORMATTING: Use clean, easily readable markdown. Provide enough detail and narrative context to be fully understandable, but keep paragraphs concise and scannable so as not to overwhelm the user. Steer away from exhaustive nested bullet lists in favor of a balanced, descriptive narrative with descriptive headings. ONLY use bullet points if explicitly requested or if absolutely necessary.
 8. INLINE LINKS: ONLY provide inline markdown links (`[Document Title](URL)`) if the user explicitly asks you to provide a document or link. Otherwise, strictly use bracketed numbers like [1] for citations, which will be rendered in a separate sources tab.
+9. PRIORITIZE PRIMARY DOCUMENTS: When answering questions about what items went to the board or related to meeting details, prioritize referencing primary documents (like "Agenda" or "Meeting Minutes") over simple "Attachment" files if both are available in the context.
 """
 
 @app.post("/chat", response_model=ChatResponse)
@@ -116,11 +117,20 @@ async def chat_endpoint(request: ChatRequest):
         MAX_LLM_CONTEXT_CHUNKS = 30
         unique_docs = {}
         
+        unique_docs = {}
+        chunks_processed = 0
+        
         for result in search_results:
-            if total_chunks >= MAX_LLM_CONTEXT_CHUNKS:
+            if chunks_processed >= MAX_LLM_CONTEXT_CHUNKS:
                 break
                 
             text = result.get("chunk_text", "")
+            if not text:
+                continue
+                
+            chunks_processed += 1
+            
+            score = result.get("@search.score", 0)
             title = result.get("title", "Unknown Title")
             url = result.get("source_url")
             doc_type = result.get("document_type", "Unknown")
@@ -136,37 +146,26 @@ async def chat_endpoint(request: ChatRequest):
             else:
                 url = f"NO_URL_{title}_{date_pub}"
                 
-            if url not in unique_docs:
-                unique_docs[url] = {
-                    "title": title,
-                    "url": url if not url.startswith("NO_URL_") else None,
-                    "document_type": doc_type,
-                    "date_published": date_pub,
-                    "chunks": []
-                }
-            unique_docs[url]["chunks"].append(text)
-            total_chunks += 1
+            doc_key = url if url else title
             
-        citations = []
-        context_parts = []
-        
-        for i, doc_data in enumerate(unique_docs.values()):
-            title = doc_data["title"]
-            url = doc_data["url"]
-            doc_type = doc_data["document_type"]
-            date_pub = doc_data["date_published"]
-            merged_content = "\n...\n".join(doc_data["chunks"])
-            
-            citations.append(
-                Citation(
-                    title=title,
-                    url=url,
-                    document_type=doc_type,
-                    date_published=date_pub,
-                    content=merged_content
+            if doc_key in unique_docs:
+                idx = unique_docs[doc_key]
+                citations[idx].content += f"\n\n... {text}"
+            else:
+                new_idx = len(citations)
+                unique_docs[doc_key] = new_idx
+                citations.append(
+                    Citation(
+                        title=title,
+                        url=url,
+                        document_type=doc_type,
+                        date_published=date_pub,
+                        content=text
+                    )
                 )
-            )
-            context_parts.append(f"Document [{i+1}]:\nTitle: {title}\nType: {doc_type}\nDate: {date_pub}\nURL: {url}\nContent: {merged_content}\n")
+                
+        for i, cit in enumerate(citations):
+            context_parts.append(f"Document [{i+1}]:\nTitle: {cit.title}\nType: {cit.document_type}\nDate: {cit.date_published}\nURL: {cit.url}\nContent: {cit.content}\n")
             
         context_string = "\n".join(context_parts)
         
