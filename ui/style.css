@@ -157,3 +157,48 @@ h6 {
     margin-bottom: 6px;
     font-family: 'Roboto Condensed', sans-serif;
 }
+
+/* Dark Mode Overrides */
+@media (prefers-color-scheme: dark) {
+    .stApp {
+        background-color: #1c2240 !important; /* MWD Navy */
+    }
+    
+    .stSidebar {
+        background-color: #14182e !important; /* Darker Navy */
+    }
+
+    [data-testid="stChatMessage"] {
+        background-color: #1c2240;
+        border: 2px solid #80b9f5;
+        box-shadow: 4px 4px 0px rgba(71, 149, 255, 0.15);
+    }
+    
+    [data-testid="stChatMessage"][data-baseweb="card"]:nth-child(odd) {
+        background-color: #272e50; /* Slightly lighter navy */
+        border: 2px solid #4795ff;
+        box-shadow: 4px 4px 0px rgba(71, 149, 255, 0.15);
+    }
+
+    /* Enforce text color in dark mode */
+    [data-testid="stChatMessage"] *, .stApp p, .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6 {
+        color: #ffffff !important;
+    }
+    
+    .citation-link {
+        background-color: #272e50;
+        color: #c6deff;
+        border-color: #80b9f5;
+        box-shadow: 2px 2px 0px rgba(71, 149, 255, 0.2);
+    }
+    
+    .citation-link:hover {
+        background-color: #4795ff;
+        color: #ffffff;
+        border-color: #ffffff;
+    }
+    
+    .source-meta {
+        color: #ececec;
+    }
+}

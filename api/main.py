@@ -52,7 +52,7 @@ Guidelines:
 4. Base your response strongly on the provided citations.
 5. CITATIONS: You must cite your sources using bracketed numbers corresponding to the Document index (e.g., [1], [2]).
 6. HISTORY IS FOR CONTEXT ONLY: Do NOT use facts, citations, or document numbers from the conversation history to answer the current question. The conversation history contains old reference numbers; ignore them. Only use the documents provided in the immediate "Context information" block.
-7. FORMATTING: Use clean, easily readable markdown. When listing items, STRICTLY use properly spaced bullet points or numbered lists. Add blank lines between list items and ensure nested sub-bullets are placed on their own lines. NEVER combine distinct items into a single dense paragraph.
+7. FORMATTING: Use clean, easily readable markdown. Provide enough detail and narrative context to be fully understandable, but keep paragraphs concise and scannable so as not to overwhelm the user. Steer away from exhaustive nested bullet lists in favor of a balanced, descriptive narrative with descriptive headings. ONLY use bullet points if explicitly requested or if absolutely necessary.
 8. INLINE LINKS: ONLY provide inline markdown links (`[Document Title](URL)`) if the user explicitly asks you to provide a document or link. Otherwise, strictly use bracketed numbers like [1] for citations, which will be rendered in a separate sources tab.
 """
 
@@ -112,16 +112,14 @@ async def chat_endpoint(request: ChatRequest):
             semantic_configuration_name="boardbuddy-semantic-config"
         )
         
-        citations = []
-        context_parts = []
+        total_chunks = 0
+        MAX_LLM_CONTEXT_CHUNKS = 30
+        unique_docs = {}
         
-        # Limit the number of chunks passed to the LLM context to prevent "Lost in the Middle" hallucination
-        MAX_LLM_CONTEXT_CHUNKS = 15
-        
-        for i, result in enumerate(search_results):
-            if i >= MAX_LLM_CONTEXT_CHUNKS:
+        for result in search_results:
+            if total_chunks >= MAX_LLM_CONTEXT_CHUNKS:
                 break
-            score = result.get("@search.score", 0)
+                
             text = result.get("chunk_text", "")
             title = result.get("title", "Unknown Title")
             url = result.get("source_url")
@@ -135,18 +133,40 @@ async def chat_endpoint(request: ChatRequest):
             # Sanitize URL to prevent 404s due to unencoded spaces
             if url:
                 url = url.replace(" ", "%20")
+            else:
+                url = f"NO_URL_{title}_{date_pub}"
                 
+            if url not in unique_docs:
+                unique_docs[url] = {
+                    "title": title,
+                    "url": url if not url.startswith("NO_URL_") else None,
+                    "document_type": doc_type,
+                    "date_published": date_pub,
+                    "chunks": []
+                }
+            unique_docs[url]["chunks"].append(text)
+            total_chunks += 1
+            
+        citations = []
+        context_parts = []
+        
+        for i, doc_data in enumerate(unique_docs.values()):
+            title = doc_data["title"]
+            url = doc_data["url"]
+            doc_type = doc_data["document_type"]
+            date_pub = doc_data["date_published"]
+            merged_content = "\n...\n".join(doc_data["chunks"])
+            
             citations.append(
                 Citation(
                     title=title,
                     url=url,
                     document_type=doc_type,
                     date_published=date_pub,
-                    content=text
+                    content=merged_content
                 )
             )
-            
-            context_parts.append(f"Document [{i+1}]:\nTitle: {title}\nType: {doc_type}\nDate: {date_pub}\nURL: {url}\nContent: {text}\n")
+            context_parts.append(f"Document [{i+1}]:\nTitle: {title}\nType: {doc_type}\nDate: {date_pub}\nURL: {url}\nContent: {merged_content}\n")
             
         context_string = "\n".join(context_parts)
         
