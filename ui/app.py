@@ -58,6 +58,10 @@ with st.sidebar:
     if st.button("Sign Out"):
         logout()
         
+    if st.button("Start New Conversation"):
+        st.session_state.messages = []
+        st.rerun()
+        
     st.divider()
     st.subheader("About")
     st.write("BoardBuddy is an AI assistant powered by Azure OpenAI and Azure AI Search.")
@@ -117,6 +121,9 @@ for message in st.session_state.messages:
                     
                     st.markdown(f"**[{idx+1}]** <a class='citation-link' href='{url}' target='_blank'>{title}</a>", unsafe_allow_html=True)
                     st.markdown(f"<div class='source-meta'>Type: {doc_type} | Date: {source_date}</div>", unsafe_allow_html=True)
+                    if cit.get("content"):
+                        with st.expander("Show relevant text"):
+                            st.write(cit.get("content"))
 
 # Accept user input
 if prompt := st.chat_input("Ask a question... (e.g., 'What was the budget for the Pure Water project in 2023?')"):

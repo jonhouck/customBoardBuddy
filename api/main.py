@@ -52,7 +52,7 @@ Guidelines:
 4. Base your response strongly on the provided citations.
 5. CITATIONS: You must cite your sources using bracketed numbers corresponding to the Document index (e.g., [1], [2]).
 6. HISTORY IS FOR CONTEXT ONLY: Do NOT use facts, citations, or document numbers from the conversation history to answer the current question. The conversation history contains old reference numbers; ignore them. Only use the documents provided in the immediate "Context information" block.
-7. FORMATTING: Use clean, easily readable markdown. When listing items, STRICTLY use properly spaced bullet points or numbered lists. Add blank lines between list items and ensure nested sub-bullets are placed on their own lines. NEVER combine distinct items into a single dense paragraph.
+7. FORMATTING: Use clean, easily readable markdown. Provide enough detail and narrative context to be fully understandable, but keep paragraphs concise and scannable so as not to overwhelm the user. Steer away from exhaustive nested bullet lists in favor of a balanced, descriptive narrative with descriptive headings. ONLY use bullet points if explicitly requested or if absolutely necessary.
 8. INLINE LINKS: ONLY provide inline markdown links (`[Document Title](URL)`) if the user explicitly asks you to provide a document or link. Otherwise, strictly use bracketed numbers like [1] for citations, which will be rendered in a separate sources tab.
 9. PRIORITIZE PRIMARY DOCUMENTS: When answering questions about what items went to the board or related to meeting details, prioritize referencing primary documents (like "Agenda" or "Meeting Minutes") over simple "Attachment" files if both are available in the context.
 """
@@ -113,11 +113,9 @@ async def chat_endpoint(request: ChatRequest):
             semantic_configuration_name="boardbuddy-semantic-config"
         )
         
-        citations = []
-        context_parts = []
-        
-        # Limit the number of chunks passed to the LLM context to prevent "Lost in the Middle" hallucination
-        MAX_LLM_CONTEXT_CHUNKS = 15
+        total_chunks = 0
+        MAX_LLM_CONTEXT_CHUNKS = 30
+        unique_docs = {}
         
         unique_docs = {}
         chunks_processed = 0
@@ -145,6 +143,8 @@ async def chat_endpoint(request: ChatRequest):
             # Sanitize URL to prevent 404s due to unencoded spaces
             if url:
                 url = url.replace(" ", "%20")
+            else:
+                url = f"NO_URL_{title}_{date_pub}"
                 
             doc_key = url if url else title
             
