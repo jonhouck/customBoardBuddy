@@ -50,7 +50,7 @@ Guidelines:
 1. Answer the user's question directly and concisely based on the currently provided context.
 2. If the answer cannot be found in the current context, clearly state that you do not have enough information. Do not hallucinate or guess.
 3. Be professional and objective in your tone.
-4. CITATIONS MANDATORY: You MUST ALWAYS cite your sources for ANY factual claim you make. You must use bracketed numbers corresponding to the Document index (e.g., [1], [2]).
+4. CITATIONS MANDATORY: You MUST ALWAYS cite your sources for ANY factual claim you make, explicitly using bracketed numbers corresponding to the Document index (e.g., [1], [2]). Every single bullet point and factual sentence MUST end with a citation.
 5. HISTORY IS FOR CONTEXT ONLY: Do NOT use facts, citations, or document numbers from the conversation history to answer the current question. The conversation history contains old reference numbers; ignore them. Only use the documents provided in the immediate "Context information" block.
 6. FORMATTING: Use clean, easily readable markdown. Provide enough detail and narrative context to be fully understandable, but keep paragraphs concise and scannable so as not to overwhelm the user. Steer away from exhaustive nested bullet lists in favor of a balanced, descriptive narrative with descriptive headings. ONLY use bullet points if explicitly requested or if absolutely necessary.
 7. INLINE LINKS: ONLY provide inline markdown links (`[Document Title](URL)`) if the user explicitly asks you to provide a document or link. Otherwise, strictly use bracketed numbers like [1] for citations, which will be rendered in a separate sources tab.
@@ -197,7 +197,7 @@ async def chat_endpoint(request: ChatRequest):
         # Append the final prompt with context
         messages.append({
             "role": "user", 
-            "content": f"Context information is below.\n---------------------\n{context_string}\n---------------------\nIMPORTANT RULES:\n1. ONLY use the context above to answer the question. Do NOT rely on facts or old citations from the conversation history.\n2. ONLY provide direct inline markdown links `[Title](URL)` if the user explicitly asks for the document or link. Otherwise, prefer bracketed numbers like [1] for citations.\n\nQuestion: {query}"
+            "content": f"Context information is below.\n---------------------\n{context_string}\n---------------------\nIMPORTANT RULES:\n1. ONLY use the context above to answer the question. Do NOT rely on facts or old citations from the conversation history.\n2. YOU MUST CITE YOUR SOURCES. Place bracketed numbers like [1] or [2] at the end of EVERY factual claim, bullet point, or sentence. Failure to include citations means failure.\n3. ONLY provide direct inline markdown links `[Title](URL)` if the user explicitly asks for them.\n\nQuestion: {query}"
         })
         
         # 5. Generate Response using o3-mini
