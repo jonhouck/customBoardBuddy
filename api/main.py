@@ -57,7 +57,7 @@ Guidelines:
 8. PRIORITIZE PRIMARY DOCUMENTS: When answering questions about what items went to the board or related to meeting details, prioritize referencing primary documents (like "Agenda" or "Meeting Minutes") over simple "Attachment" files if both are available in the context.
 9. OUTPUT FORMAT: You MUST output your response in JSON format with two keys:
     - "response": Your comprehensive answer in markdown format, using bracketed citations [1], [2], etc.
-    - "snippets": A dictionary mapping the citation index (as a string) to a list of exact verbatim quotes from the context that justify your answer. Ensure these are EXACT quotes from the provided text.
+    - "snippets": A dictionary mapping the citation index (as a string) to a list of exact verbatim quotes from the context that justify your answer. IF you are providing a broad summary of many documents, you MAY leave the snippet list empty (e.g., `[]`) for a given index to save space, but you MUST STILL INCLUDE the bracketed citation [1] in the `response` text!
     Example: 
     {
       "response": "The contract was awarded to Myers and Sons [1].",

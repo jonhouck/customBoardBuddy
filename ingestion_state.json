@@ -37393,5 +37393,805 @@
   "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/07-July/Letters/003963120.pdf": {
     "status": "processed",
     "chunks": 8
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/08-Aug/Agendas/003964309.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/08-Aug/Agendas/003964307.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/08-Aug/Agendas/003964301.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/08-Aug/Agendas/003964299.pdf": {
+    "status": "processed",
+    "chunks": 3
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/08-Aug/Agendas/003964289.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/08-Aug/Agendas/003964305.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/08-Aug/Agendas/003964297.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/08-Aug/Agendas/003964287.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/08-Aug/Agendas/003964285.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/08-Aug/Agendas/003964303.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/08-Aug/Agendas/003964295.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/08-Aug/Agendas/003964291.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/08-Aug/Letters/003964321.pdf": {
+    "status": "processed",
+    "chunks": 7
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/08-Aug/Letters/003964337.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/08-Aug/Letters/003964349.pdf": {
+    "status": "processed",
+    "chunks": 3
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/08-Aug/Letters/003964347.pdf": {
+    "status": "processed",
+    "chunks": 3
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/08-Aug/Letters/003964323.pdf": {
+    "status": "processed",
+    "chunks": 18
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/08-Aug/Letters/003964345.pdf": {
+    "status": "processed",
+    "chunks": 4
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/08-Aug/Letters/003970386.pdf": {
+    "status": "processed",
+    "chunks": 4
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/08-Aug/Letters/003964331.pdf": {
+    "status": "processed",
+    "chunks": 8
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/08-Aug/Letters/003964333.pdf": {
+    "status": "processed",
+    "chunks": 4
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/08-Aug/Letters/003964329.pdf": {
+    "status": "processed",
+    "chunks": 8
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/08-Aug/Letters/003964353.pdf": {
+    "status": "processed",
+    "chunks": 8
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/08-Aug/Reports/003964359.pdf": {
+    "status": "processed",
+    "chunks": 7
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/08-Aug/Reports/003964396.pdf": {
+    "status": "processed",
+    "chunks": 3
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/08-Aug/Minutes/003964315.pdf": {
+    "status": "processed",
+    "chunks": 11
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/08-Aug/Letters/003964325.pdf": {
+    "status": "processed",
+    "chunks": 15
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/08-Aug/Letters/003964351.pdf": {
+    "status": "processed",
+    "chunks": 4
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/08-Aug/Reports/003964398.pdf": {
+    "status": "processed",
+    "chunks": 7
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/09-Sep/Agendas/003966804.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/08-Aug/Reports/003964361.pdf": {
+    "status": "processed",
+    "chunks": 14
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/08-Aug/Reports/003964369.pdf": {
+    "status": "processed",
+    "chunks": 3
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/08-Aug/Reports/003964367.pdf": {
+    "status": "processed",
+    "chunks": 5
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/08-Aug/Letters/003964317.pdf": {
+    "status": "processed",
+    "chunks": 9
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/09-Sep/Agendas/003966796.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/09-Sep/Agendas/003966788.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/09-Sep/Agendas/003966792.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/09-Sep/Agendas/003966806.pdf": {
+    "status": "processed",
+    "chunks": 3
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/09-Sep/Agendas/003966798.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/09-Sep/Agendas/003966810.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/09-Sep/Agendas/003966790.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/08-Aug/Reports/003964363.pdf": {
+    "status": "processed",
+    "chunks": 22
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/08-Aug/Letters/003964319.pdf": {
+    "status": "processed",
+    "chunks": 14
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/09-Sep/Letters/003966872.pdf": {
+    "status": "processed",
+    "chunks": 33
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/09-Sep/Letters/003966973.pdf": {
+    "status": "processed",
+    "chunks": 1
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/09-Sep/Letters/003966862.pdf": {
+    "status": "processed",
+    "chunks": 7
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/09-Sep/Agendas/003966802.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/09-Sep/Letters/003966951.pdf": {
+    "status": "processed",
+    "chunks": 6
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/09-Sep/Letters/003966953.pdf": {
+    "status": "processed",
+    "chunks": 5
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/09-Sep/Agendas/003966808.pdf": {
+    "status": "processed",
+    "chunks": 3
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/09-Sep/Agendas/003966814.pdf": {
+    "status": "processed",
+    "chunks": 6
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/09-Sep/Letters/003966866.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/09-Sep/Minutes/003966824.pdf": {
+    "status": "processed",
+    "chunks": 15
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/09-Sep/Letters/003966874.pdf": {
+    "status": "processed",
+    "chunks": 13
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/09-Sep/Letters/003966949.pdf": {
+    "status": "processed",
+    "chunks": 3
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/09-Sep/Letters/003966947.pdf": {
+    "status": "processed",
+    "chunks": 4
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/09-Sep/Letters/003966943.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/09-Sep/Letters/003966977.pdf": {
+    "status": "processed",
+    "chunks": 3
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/09-Sep/Letters/003966955.pdf": {
+    "status": "processed",
+    "chunks": 4
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/09-Sep/Letters/003966967.pdf": {
+    "status": "processed",
+    "chunks": 4
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/08-Aug/Letters/003970388.pdf": {
+    "status": "processed",
+    "chunks": 23
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/09-Sep/Letters/003966985.pdf": {
+    "status": "processed",
+    "chunks": 13
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/09-Sep/Reports/003966832.pdf": {
+    "status": "processed",
+    "chunks": 21
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/09-Sep/Letters/003966981.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/09-Sep/Reports/003966842.pdf": {
+    "status": "processed",
+    "chunks": 7
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/09-Sep/Reports/003966828.pdf": {
+    "status": "processed",
+    "chunks": 5
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/09-Sep/Reports/003970348.pdf": {
+    "status": "processed",
+    "chunks": 1
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/09-Sep/Reports/003966836.pdf": {
+    "status": "processed",
+    "chunks": 13
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/09-Sep/Reports/003966834.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/04-April/Letters/003960059.pdf": {
+    "status": "processed",
+    "chunks": 444
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/09-Sep/Reports/003966840.pdf": {
+    "status": "processed",
+    "chunks": 3
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/01-January/Agenda/003905590.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/01-January/Agenda/003905594.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/01-January/Agenda/003905596.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/01-January/Agenda/003905589.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/01-January/Agenda/003905600.pdf": {
+    "status": "processed",
+    "chunks": 1
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/09-Sep/Letters/003966971.pdf": {
+    "status": "processed",
+    "chunks": 3
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/01-January/Agenda/003905591.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/01-January/Agenda/003905593.pdf": {
+    "status": "processed",
+    "chunks": 1
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/01-January/Agenda/003905595.pdf": {
+    "status": "processed",
+    "chunks": 7
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/01-January/Agenda/003905597.pdf": {
+    "status": "processed",
+    "chunks": 1
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/01-January/Agenda/003905602.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/01-January/Agenda/003905598.pdf": {
+    "status": "processed",
+    "chunks": 1
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/01-January/Letter/003905615.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/09-Sep/Letters/003966860.pdf": {
+    "status": "processed",
+    "chunks": 20
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/01-January/Letter/003905614.pdf": {
+    "status": "processed",
+    "chunks": 1
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/01-January/Letter/003905630.pdf": {
+    "status": "processed",
+    "chunks": 3
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/01-January/Letter/003905631.pdf": {
+    "status": "processed",
+    "chunks": 3
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/01-January/Letter/003905625.pdf": {
+    "status": "processed",
+    "chunks": 36
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/01-January/Letter/003905604.pdf": {
+    "status": "processed",
+    "chunks": 3
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/01-January/Letter/003905605.pdf": {
+    "status": "processed",
+    "chunks": 3
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/01-January/Letter/003905629.pdf": {
+    "status": "processed",
+    "chunks": 4
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/01-January/Letter/003905616.pdf": {
+    "status": "processed",
+    "chunks": 16
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/01-January/Letter/003905633.pdf": {
+    "status": "processed",
+    "chunks": 4
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/01-January/Letter/003905636.pdf": {
+    "status": "processed",
+    "chunks": 5
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/01-January/Minutes/003906076.pdf": {
+    "status": "processed",
+    "chunks": 10
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/01-January/Letter/003905632.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/01-January/Letter/003905634.pdf": {
+    "status": "processed",
+    "chunks": 7
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/01-January/Letter/003905603.pdf": {
+    "status": "processed",
+    "chunks": 1
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/01-January/Letter/003905635.pdf": {
+    "status": "processed",
+    "chunks": 1
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/01-January/Minutes/064773270.pdf": {
+    "status": "processed",
+    "chunks": 15
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/11-Nov/Agendas/003970264.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/11-Nov/Agendas/003970260.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/11-Nov/Agendas/003970262.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/11-Nov/Agendas/003970268.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/11-Nov/Agendas/003970266.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/11-Nov/Agendas/003970272.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/11-Nov/Agendas/003970302.pdf": {
+    "status": "processed",
+    "chunks": 6
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/11-Nov/Agendas/003970254.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/11-Nov/Agendas/003970256.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/11-Nov/Agendas/003970258.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/11-Nov/Agendas/003970286.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/11-Nov/Minutes/003970306.pdf": {
+    "status": "processed",
+    "chunks": 7
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/11-Nov/Agendas/003970270.pdf": {
+    "status": "processed",
+    "chunks": 3
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/11-Nov/Letters/003970354.pdf": {
+    "status": "processed",
+    "chunks": 8
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/11-Nov/Letters/003970364.pdf": {
+    "status": "processed",
+    "chunks": 16
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/11-Nov/Letters/003970374.pdf": {
+    "status": "processed",
+    "chunks": 211
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/11-Nov/Letters/003970362.pdf": {
+    "status": "processed",
+    "chunks": 4
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/11-Nov/Letters/003970368.pdf": {
+    "status": "processed",
+    "chunks": 3
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/11-Nov/Letters/003970370.pdf": {
+    "status": "processed",
+    "chunks": 12
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/11-Nov/Letters/003970366.pdf": {
+    "status": "processed",
+    "chunks": 3
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/11-Nov/Agendas/003970298.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/11-Nov/Letters/003970372.pdf": {
+    "status": "processed",
+    "chunks": 8
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/11-Nov/Letters/003970382.pdf": {
+    "status": "processed",
+    "chunks": 4
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/11-Nov/Letters/003970352.pdf": {
+    "status": "processed",
+    "chunks": 8
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/11-Nov/Letters/003970360.pdf": {
+    "status": "processed",
+    "chunks": 5
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/11-Nov/Reports/003970308.pdf": {
+    "status": "processed",
+    "chunks": 4
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/01-January/Letter/003905617.pdf": {
+    "status": "processed",
+    "chunks": 54
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/11-Nov/Letters/003970380.pdf": {
+    "status": "processed",
+    "chunks": 16
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/11-Nov/Letters/003970384.pdf": {
+    "status": "processed",
+    "chunks": 19
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/11-Nov/Letters/003970378.pdf": {
+    "status": "processed",
+    "chunks": 4
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/11-Nov/Reports/003970326.pdf": {
+    "status": "processed",
+    "chunks": 4
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/11-Nov/Reports/003970317.pdf": {
+    "status": "processed",
+    "chunks": 4
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/11-Nov/Reports/003970334.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/11-Nov/Reports/003970310.pdf": {
+    "status": "processed",
+    "chunks": 80
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/11-Nov/Reports/003970322.pdf": {
+    "status": "processed",
+    "chunks": 12
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/11-Nov/Reports/003970336.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/11-Nov/Reports/003970332.pdf": {
+    "status": "processed",
+    "chunks": 6
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/11-Nov/Reports/003970312.pdf": {
+    "status": "processed",
+    "chunks": 18
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/10-Oct/Agendas/003968046.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/02-February/Letter/003905694.pdf": {
+    "status": "processed",
+    "chunks": 5
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/02-February/Letter/003905678.pdf": {
+    "status": "processed",
+    "chunks": 3
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/02-February/Letter/003905679.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/10-Oct/Agendas/003968068.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/02-February/Letter/003905682.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/02-February/Letter/003905687.pdf": {
+    "status": "processed",
+    "chunks": 4
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/02-February/Letter/003905681.pdf": {
+    "status": "processed",
+    "chunks": 3
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/02-February/Letter/003905693.pdf": {
+    "status": "processed",
+    "chunks": 6
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/10-Oct/Agendas/003968072.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/02-February/Letter/003905680.pdf": {
+    "status": "processed",
+    "chunks": 3
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/10-Oct/Agendas/003968058.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/10-Oct/Agendas/003968044.pdf": {
+    "status": "processed",
+    "chunks": 3
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/10-Oct/Agendas/003968080.pdf": {
+    "status": "processed",
+    "chunks": 1
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/02-February/Letter/003905695.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/02-February/Letter/003905692.pdf": {
+    "status": "processed",
+    "chunks": 45
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/10-Oct/Agendas/003968082.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/10-Oct/Agendas/003968038.pdf": {
+    "status": "processed",
+    "chunks": 5
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/10-Oct/Agendas/003968036.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/10-Oct/Agendas/003968070.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/02-February/Letter/003905688.pdf": {
+    "status": "processed",
+    "chunks": 3
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/10-Oct/Agendas/003968074.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/10-Oct/Agendas/003968060.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/02-February/Letter/003905686.pdf": {
+    "status": "processed",
+    "chunks": 19
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/10-Oct/Agendas/003968076.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/02-February/Letter/003905685.pdf": {
+    "status": "processed",
+    "chunks": 20
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/02-February/Letter/003905697.pdf": {
+    "status": "processed",
+    "chunks": 7
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/02-February/Letter/003905698.pdf": {
+    "status": "processed",
+    "chunks": 3
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/02-February/Letter/003905702.pdf": {
+    "status": "processed",
+    "chunks": 19
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/12-Dec/Agendas/003973370.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/02-February/Letter/003905696.pdf": {
+    "status": "processed",
+    "chunks": 4
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/12-Dec/Agendas/003973382.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/02-February/Letter/003905703.pdf": {
+    "status": "processed",
+    "chunks": 5
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/10-Oct/Letters/003968303.pdf": {
+    "status": "processed",
+    "chunks": 4
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/02-February/Letter/003905701.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/02-February/Minutes/003906074.pdf": {
+    "status": "processed",
+    "chunks": 9
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/02-February/Minutes/003906075.pdf": {
+    "status": "processed",
+    "chunks": 3
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/10-Oct/Letters/003968281.pdf": {
+    "status": "processed",
+    "chunks": 3
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/02-February/Minutes/064773271.pdf": {
+    "status": "processed",
+    "chunks": 8
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/03-March/Agenda/003906040.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/03-March/Agenda/003906045.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/10-Oct/Letters/003968295.pdf": {
+    "status": "processed",
+    "chunks": 7
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/10-Oct/Letters/003968309.pdf": {
+    "status": "processed",
+    "chunks": 1
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/12-Dec/Agendas/003973380.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/10-Oct/Letters/003968293.pdf": {
+    "status": "processed",
+    "chunks": 3
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/03-March/Agenda/003906039.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/10-Oct/Letters/003968301.pdf": {
+    "status": "processed",
+    "chunks": 3
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/03-March/Agenda/003906047.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/10-Oct/Letters/003968279.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/10-Oct/Minutes/003968078.pdf": {
+    "status": "processed",
+    "chunks": 9
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/03-March/Agenda/003906041.pdf": {
+    "status": "processed",
+    "chunks": 4
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/10-Oct/Letters/003968277.pdf": {
+    "status": "processed",
+    "chunks": 4
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/10-Oct/Letters/003968287.pdf": {
+    "status": "processed",
+    "chunks": 4
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/10-Oct/Letters/003968305.pdf": {
+    "status": "processed",
+    "chunks": 4
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/02-February/Letter/003905706.pdf": {
+    "status": "processed",
+    "chunks": 19
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/02-February/Report/003905705.pdf": {
+    "status": "processed",
+    "chunks": 3
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/03-March/Agenda/003906042.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/12-Dec/Agendas/003973378.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/12-Dec/Agendas/003973366.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2001/03-March/Letter/003906056.pdf": {
+    "status": "processed",
+    "chunks": 2
+  },
+  "https://mwdsocal.sharepoint.com/sites/CoPilot/Shared%20Documents/2005/12-Dec/Agendas/003973372.pdf": {
+    "status": "processed",
+    "chunks": 3
   }
 }
