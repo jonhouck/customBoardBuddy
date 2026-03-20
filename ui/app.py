@@ -7,7 +7,7 @@ import re
 from dotenv import load_dotenv
 from auth import ensure_authenticated, logout
 
-def highlight_verbatim_quotes(source_text: str, answer_text: str, min_match_length: int = 30) -> str:
+def highlight_verbatim_quotes(source_text: str, answer_text: str, min_match_length: int = 15) -> str:
     """Highlights verbatim quotes from the answer within the source text."""
     if not source_text:
         return ""
@@ -23,7 +23,6 @@ def highlight_verbatim_quotes(source_text: str, answer_text: str, min_match_leng
         
     matcher = difflib.SequenceMatcher(None, clean_source.lower(), answer_text.lower())
     blocks = matcher.get_matching_blocks()
-    valid_blocks = [b for b in blocks if b.size >= min_match_length]
     
     highlighted = ""
     last_idx = 0
@@ -160,7 +159,9 @@ for message in st.session_state.messages:
                         title = "Unknown Title"
                         
                     url = str(cit.get("url") or "").strip()
-                    if url and url != "#":
+                    url = " ".join(url.split())
+                    
+                    if url and url != "#" and not url.startswith("NO_URL_"):
                         st.markdown(f"**[{idx+1}]** <a class='citation-link' href='{url}' target='_blank'>{title}</a>", unsafe_allow_html=True)
                     else:
                         st.markdown(f"**[{idx+1}]** <span class='citation-link'>{title}</span>", unsafe_allow_html=True)
