@@ -45,4 +45,4 @@ jobs:
         export AZURE_OPENAI_ENDPOINT="https://fake.openai.azure.com/"
         export UI_CLIENT_ID="fake-ui-client"
         export UI_CLIENT_SECRET="fake-ui-secret"
-        pytest tests/
+        pytest tests/ api/test_main.py

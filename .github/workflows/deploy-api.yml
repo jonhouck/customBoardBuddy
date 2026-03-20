@@ -24,6 +24,27 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest httpx
+
+      - name: Run tests with Pytest
+        run: |
+          # Set dummy environments for testing
+          export AZURE_TENANT_ID="fake-tenant"
+          export AZURE_CLIENT_ID="fake-client"
+          export AZURE_CLIENT_SECRET="fake-secret"
+          export AZURE_SEARCH_SERVICE_ENDPOINT="https://fake.search.windows.net"
+          export AZURE_SEARCH_ADMIN_KEY="fake-key"
+          export AZURE_SEARCH_INDEX_NAME="fake-index"
+          export AZURE_OPENAI_API_KEY="fake-key"
+          export AZURE_OPENAI_ENDPOINT="https://fake.openai.azure.com/"
+          export UI_CLIENT_ID="fake-ui-client"
+          export UI_CLIENT_SECRET="fake-ui-secret"
+          pytest tests/ api/test_main.py
+
       - name: Create release zip
         run: |
           zip -r release.zip ./* -x "*.git*" -x ".venv/*" -x "*__pycache__*" -x "*.pytest_cache*" -x "antenv/*"

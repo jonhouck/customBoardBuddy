@@ -60,7 +60,9 @@ def test_chat_endpoint(mock_search_client, mock_openai_client):
     assert "citations" in data
     assert len(data["citations"]) == 1
     assert data["citations"][0]["title"] == "Mock Document 1"
-    assert data["citations"][0]["snippets"] == ["mock chunk of text"]
+    assert "contexts" in data["citations"][0]
+    expected_context = "This is a <span style='color: #ba4d01; font-weight: bold;'>mock chunk of text</span> containing the answer."
+    assert data["citations"][0]["contexts"][0] == expected_context
     
     # Verify exactly how APIs were called
     mock_openai_instance.embeddings.create.assert_called_once()
