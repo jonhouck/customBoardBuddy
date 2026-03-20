@@ -270,11 +270,12 @@ async def chat_endpoint(request: ChatRequest):
         remapped_answer = re.sub(r'\[(\d+(?:\s*[,;&]\s*\d+)*)\]', replace_citation, answer)
         
         def extract_context_blocks(full_text: str, quotes: List[str]) -> List[str]:
+            import html
             paragraphs = [p.strip() for p in full_text.split('\n\n') if p.strip()]
             contexts_found = []
             
             for quote in quotes:
-                if not quote.strip():
+                if not isinstance(quote, str) or not quote.strip():
                     continue
                 quote_lower = quote.lower().strip()
                 found = False
@@ -286,7 +287,6 @@ async def chat_endpoint(request: ChatRequest):
                         
                         # Apply highlight to the exact paragraph where it was found
                         highlighted_paras = []
-                        import html
                         for cp in context_paras:
                             safe_cp = html.escape(cp)
                             if quote_lower in safe_cp.lower():
