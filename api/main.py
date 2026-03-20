@@ -220,8 +220,8 @@ async def chat_endpoint(request: ChatRequest):
             clean_content = clean_content.strip()
                 
             response_json = json.loads(clean_content)
-            answer = response_json.get("response", "")
-            snippets_dict = response_json.get("snippets", {})
+            answer = response_json.get("response") or ""
+            snippets_dict = response_json.get("snippets") or {}
         except Exception as e:
             logger.error(f"Failed to parse LLM JSON: {e}")
             answer = raw_content
