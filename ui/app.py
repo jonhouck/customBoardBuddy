@@ -133,11 +133,11 @@ for message in st.session_state.messages:
                         st.markdown(f"**[{idx+1}]** <span class='citation-link'>{title}</span>", unsafe_allow_html=True)
                         
                     st.markdown(f"<div class='source-meta'>Type: {doc_type} | Date: {source_date}</div>", unsafe_allow_html=True)
-                    snippets = cit.get("snippets", [])
-                    if snippets:
-                        with st.expander("Show relevant snippets"):
-                            for snippet in snippets:
-                                st.markdown(f"> {snippet}")
+                    contexts = cit.get("contexts", [])
+                    if contexts:
+                        with st.expander("Show relevant context"):
+                            for ctx in contexts:
+                                st.markdown(f"<div style='border-left: 3px solid #ba4d01; padding-left: 10px; margin-bottom: 10px; font-style: italic;'>{ctx}</div>", unsafe_allow_html=True)
                     elif cit.get("content"):
                         with st.expander("Show full context"):
                             st.markdown(cit.get("content"))

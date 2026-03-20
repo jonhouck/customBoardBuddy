@@ -37,7 +37,7 @@ class Citation(BaseModel):
     document_type: str
     date_published: Optional[str] = None
     content: str
-    snippets: Optional[List[str]] = None
+    contexts: Optional[List[str]] = None
     
 class ChatResponse(BaseModel):
     response: str
@@ -50,13 +50,12 @@ Guidelines:
 1. Answer the user's question directly and concisely based on the currently provided context.
 2. If the answer cannot be found in the current context, clearly state that you do not have enough information. Do not hallucinate or guess.
 3. Be professional and objective in your tone.
-4. Base your response strongly on the provided citations.
-5. CITATIONS: You must cite your sources using bracketed numbers corresponding to the Document index (e.g., [1], [2]).
-6. HISTORY IS FOR CONTEXT ONLY: Do NOT use facts, citations, or document numbers from the conversation history to answer the current question. The conversation history contains old reference numbers; ignore them. Only use the documents provided in the immediate "Context information" block.
-7. FORMATTING: Use clean, easily readable markdown. Provide enough detail and narrative context to be fully understandable, but keep paragraphs concise and scannable so as not to overwhelm the user. Steer away from exhaustive nested bullet lists in favor of a balanced, descriptive narrative with descriptive headings. ONLY use bullet points if explicitly requested or if absolutely necessary.
-8. INLINE LINKS: ONLY provide inline markdown links (`[Document Title](URL)`) if the user explicitly asks you to provide a document or link. Otherwise, strictly use bracketed numbers like [1] for citations, which will be rendered in a separate sources tab.
-9. PRIORITIZE PRIMARY DOCUMENTS: When answering questions about what items went to the board or related to meeting details, prioritize referencing primary documents (like "Agenda" or "Meeting Minutes") over simple "Attachment" files if both are available in the context.
-10. OUTPUT FORMAT: You MUST output your response in JSON format with two keys:
+4. CITATIONS MANDATORY: You MUST ALWAYS cite your sources for ANY factual claim you make. You must use bracketed numbers corresponding to the Document index (e.g., [1], [2]).
+5. HISTORY IS FOR CONTEXT ONLY: Do NOT use facts, citations, or document numbers from the conversation history to answer the current question. The conversation history contains old reference numbers; ignore them. Only use the documents provided in the immediate "Context information" block.
+6. FORMATTING: Use clean, easily readable markdown. Provide enough detail and narrative context to be fully understandable, but keep paragraphs concise and scannable so as not to overwhelm the user. Steer away from exhaustive nested bullet lists in favor of a balanced, descriptive narrative with descriptive headings. ONLY use bullet points if explicitly requested or if absolutely necessary.
+7. INLINE LINKS: ONLY provide inline markdown links (`[Document Title](URL)`) if the user explicitly asks you to provide a document or link. Otherwise, strictly use bracketed numbers like [1] for citations, which will be rendered in a separate sources tab.
+8. PRIORITIZE PRIMARY DOCUMENTS: When answering questions about what items went to the board or related to meeting details, prioritize referencing primary documents (like "Agenda" or "Meeting Minutes") over simple "Attachment" files if both are available in the context.
+9. OUTPUT FORMAT: You MUST output your response in JSON format with two keys:
     - "response": Your comprehensive answer in markdown format, using bracketed citations [1], [2], etc.
     - "snippets": A dictionary mapping the citation index (as a string) to a list of exact verbatim quotes from the context that justify your answer. Ensure these are EXACT quotes from the provided text.
     Example: 
@@ -156,11 +155,15 @@ async def chat_endpoint(request: ChatRequest):
             else:
                 url = f"NO_URL_{title}_{date_pub}"
                 
-            doc_key = url if url else title
+            # Deduplicate broadly by title to avoid redundant sources
+            doc_key = title.strip().lower()
             
             if doc_key in unique_docs:
                 idx = unique_docs[doc_key]
-                citations[idx].content += f"\n\n... {text}"
+                citations[idx].content += f"\n\n{text}"
+                # If the URL was empty previously but we found one now, adopt it
+                if not citations[idx].url and url and not url.startswith("NO_URL_"):
+                    citations[idx].url = url
             else:
                 new_idx = len(citations)
                 unique_docs[doc_key] = new_idx
@@ -266,6 +269,41 @@ async def chat_endpoint(request: ChatRequest):
         # Perform replacement
         remapped_answer = re.sub(r'\[(\d+(?:\s*[,;&]\s*\d+)*)\]', replace_citation, answer)
         
+        def extract_context_blocks(full_text: str, quotes: List[str]) -> List[str]:
+            paragraphs = [p.strip() for p in full_text.split('\n\n') if p.strip()]
+            contexts_found = []
+            
+            for quote in quotes:
+                if not quote.strip():
+                    continue
+                quote_lower = quote.lower().strip()
+                found = False
+                for i, p in enumerate(paragraphs):
+                    if quote_lower in p.lower():
+                        start_idx = max(0, i - 1)
+                        end_idx = min(len(paragraphs), i + 2)
+                        context_paras = paragraphs[start_idx:end_idx]
+                        
+                        # Apply highlight to the exact paragraph where it was found
+                        highlighted_paras = []
+                        import html
+                        for cp in context_paras:
+                            safe_cp = html.escape(cp)
+                            if quote_lower in safe_cp.lower():
+                                # Case-insensitive replace with highlight
+                                pattern = re.compile(re.escape(quote.strip()), re.IGNORECASE)
+                                safe_cp = pattern.sub(lambda m: f"<span style='color: #ba4d01; font-weight: bold;'>{m.group(0)}</span>", safe_cp)
+                            highlighted_paras.append(safe_cp)
+                        
+                        contexts_found.append("<br><br>".join(highlighted_paras))
+                        found = True
+                        break
+                if not found:
+                    # fallback if LLM slightly altered it
+                    contexts_found.append(f"<span style='color: #ba4d01; font-weight: bold;'>{html.escape(quote)}</span>")
+                    
+            return contexts_found
+
         # Build the final citations array
         final_citations = []
         for old_idx in limited_indices:
@@ -273,7 +311,8 @@ async def chat_endpoint(request: ChatRequest):
             cit_snippets = snippets_dict.get(str(old_idx), [])
             if not isinstance(cit_snippets, list):
                 cit_snippets = [cit_snippets] if isinstance(cit_snippets, str) else []
-            cit.snippets = cit_snippets
+            
+            cit.contexts = extract_context_blocks(cit.content, cit_snippets)
             final_citations.append(cit)
         
         # If no citations were used or matched, return an empty list
