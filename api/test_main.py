@@ -23,7 +23,7 @@ def test_chat_endpoint(mock_search_client, mock_openai_client):
     
     # Mock chat completions response
     mock_chat_response = MagicMock()
-    mock_chat_response.choices = [MagicMock(message=MagicMock(content="This is a mocked response based on the context."))]
+    mock_chat_response.choices = [MagicMock(message=MagicMock(content='{"response": "This is a mocked response based on the context. [1]", "snippets": {"1": ["mock chunk of text"]}}'))]
     mock_openai_instance.chat.completions.create.return_value = mock_chat_response
     
     mock_openai_client.return_value = mock_openai_instance
@@ -56,10 +56,11 @@ def test_chat_endpoint(mock_search_client, mock_openai_client):
     data = response.json()
     
     assert "response" in data
-    assert data["response"] == "This is a mocked response based on the context."
+    assert data["response"] == "This is a mocked response based on the context. [1]"
     assert "citations" in data
     assert len(data["citations"]) == 1
     assert data["citations"][0]["title"] == "Mock Document 1"
+    assert data["citations"][0]["snippets"] == ["mock chunk of text"]
     
     # Verify exactly how APIs were called
     mock_openai_instance.embeddings.create.assert_called_once()

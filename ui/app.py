@@ -1,43 +1,9 @@
 import streamlit as st
 import requests
 import os
-import difflib
-import html
 import re
 from dotenv import load_dotenv
 from auth import ensure_authenticated, logout
-
-def highlight_verbatim_quotes(source_text: str, answer_text: str, min_match_length: int = 15) -> str:
-    """Highlights verbatim quotes from the answer within the source text."""
-    if not source_text:
-        return ""
-        
-    # Strip HTML tags but preserve text content and newlines
-    clean_source = re.sub(r'<[^>]+>', ' ', source_text)
-    # Condense multiple spaces but preserve explicit newlines
-    clean_source = re.sub(r'[ \t]+', ' ', clean_source).strip()
-    clean_source = re.sub(r'\n{3,}', '\n\n', clean_source)
-    
-    if not answer_text:
-        return html.escape(clean_source).replace('\n', '<br>')
-        
-    matcher = difflib.SequenceMatcher(None, clean_source.lower(), answer_text.lower())
-    blocks = matcher.get_matching_blocks()
-    
-    highlighted = ""
-    last_idx = 0
-    
-    for block in blocks:
-        if block.size >= min_match_length:
-            # Escape the unhighlighted part
-            highlighted += html.escape(clean_source[last_idx:block.a])
-            # Escape the matched part and wrap in styling span using MWD Orange 1
-            match_text = html.escape(clean_source[block.a:block.a + block.size])
-            highlighted += f'<span style="color: #ba4d01; font-weight: bold;">{match_text}</span>'
-            last_idx = block.a + block.size
-            
-    highlighted += html.escape(clean_source[last_idx:])
-    return highlighted.replace('\n', '<br>')
 
 # Load environment variables
 load_dotenv()
@@ -167,10 +133,14 @@ for message in st.session_state.messages:
                         st.markdown(f"**[{idx+1}]** <span class='citation-link'>{title}</span>", unsafe_allow_html=True)
                         
                     st.markdown(f"<div class='source-meta'>Type: {doc_type} | Date: {source_date}</div>", unsafe_allow_html=True)
-                    if cit.get("content"):
-                        with st.expander("Show relevant text"):
-                            highlighted_text = highlight_verbatim_quotes(cit.get("content"), message.get("content", ""))
-                            st.markdown(highlighted_text, unsafe_allow_html=True)
+                    snippets = cit.get("snippets", [])
+                    if snippets:
+                        with st.expander("Show relevant snippets"):
+                            for snippet in snippets:
+                                st.markdown(f"> {snippet}")
+                    elif cit.get("content"):
+                        with st.expander("Show full context"):
+                            st.markdown(cit.get("content"))
 
 # Accept user input
 if prompt := st.chat_input("Ask a question... (e.g., 'What was the budget for the Pure Water project in 2023?')"):

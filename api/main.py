@@ -37,6 +37,7 @@ class Citation(BaseModel):
     document_type: str
     date_published: Optional[str] = None
     content: str
+    snippets: Optional[List[str]] = None
     
 class ChatResponse(BaseModel):
     response: str
@@ -55,6 +56,16 @@ Guidelines:
 7. FORMATTING: Use clean, easily readable markdown. Provide enough detail and narrative context to be fully understandable, but keep paragraphs concise and scannable so as not to overwhelm the user. Steer away from exhaustive nested bullet lists in favor of a balanced, descriptive narrative with descriptive headings. ONLY use bullet points if explicitly requested or if absolutely necessary.
 8. INLINE LINKS: ONLY provide inline markdown links (`[Document Title](URL)`) if the user explicitly asks you to provide a document or link. Otherwise, strictly use bracketed numbers like [1] for citations, which will be rendered in a separate sources tab.
 9. PRIORITIZE PRIMARY DOCUMENTS: When answering questions about what items went to the board or related to meeting details, prioritize referencing primary documents (like "Agenda" or "Meeting Minutes") over simple "Attachment" files if both are available in the context.
+10. OUTPUT FORMAT: You MUST output your response in JSON format with two keys:
+    - "response": Your comprehensive answer in markdown format, using bracketed citations [1], [2], etc.
+    - "snippets": A dictionary mapping the citation index (as a string) to a list of exact verbatim quotes from the context that justify your answer. Ensure these are EXACT quotes from the provided text.
+    Example: 
+    {
+      "response": "The contract was awarded to Myers and Sons [1].",
+      "snippets": {
+        "1": ["Award a $1,718,000 construction contract to Myers and Sons"]
+      }
+    }
 """
 
 @app.post("/chat", response_model=ChatResponse)
@@ -190,10 +201,28 @@ async def chat_endpoint(request: ChatRequest):
         completion = openai_client.chat.completions.create(
             model=settings.AZURE_OPENAI_CHAT_DEPLOYMENT,
             messages=messages,
-            max_completion_tokens=5000
+            max_completion_tokens=5000,
+            response_format={"type": "json_object"}
         )
         
-        answer = completion.choices[0].message.content
+        import json
+        raw_content = completion.choices[0].message.content
+        try:
+            # Strip markdown if present
+            clean_content = raw_content
+            if clean_content.startswith("```json"):
+                clean_content = clean_content.split("```json", 1)[1]
+                if clean_content.endswith("```"):
+                    clean_content = clean_content.rsplit("```", 1)[0]
+            clean_content = clean_content.strip()
+                
+            response_json = json.loads(clean_content)
+            answer = response_json.get("response", "")
+            snippets_dict = response_json.get("snippets", {})
+        except Exception as e:
+            logger.error(f"Failed to parse LLM JSON: {e}")
+            answer = raw_content
+            snippets_dict = {}
         
         # 6. Post-process citations to only return what was used and re-map indices for the UI
         cited_indices = set()
@@ -238,7 +267,14 @@ async def chat_endpoint(request: ChatRequest):
         remapped_answer = re.sub(r'\[(\d+(?:\s*[,;&]\s*\d+)*)\]', replace_citation, answer)
         
         # Build the final citations array
-        final_citations = [citations[old_idx - 1] for old_idx in limited_indices]
+        final_citations = []
+        for old_idx in limited_indices:
+            cit = citations[old_idx - 1]
+            cit_snippets = snippets_dict.get(str(old_idx), [])
+            if not isinstance(cit_snippets, list):
+                cit_snippets = [cit_snippets] if isinstance(cit_snippets, str) else []
+            cit.snippets = cit_snippets
+            final_citations.append(cit)
         
         # If no citations were used or matched, return an empty list
         if not final_citations:
