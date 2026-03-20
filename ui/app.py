@@ -23,6 +23,7 @@ def highlight_verbatim_quotes(source_text: str, answer_text: str, min_match_leng
         
     matcher = difflib.SequenceMatcher(None, clean_source.lower(), answer_text.lower())
     blocks = matcher.get_matching_blocks()
+    valid_blocks = [b for b in blocks if b.size >= min_match_length]
     
     highlighted = ""
     last_idx = 0
