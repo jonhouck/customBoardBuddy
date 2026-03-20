@@ -18,13 +18,13 @@ def highlight_verbatim_quotes(source_text: str, answer_text: str, min_match_leng
     last_idx = 0
     
     for block in blocks:
-        if block.n >= min_match_length:
+        if block.size >= min_match_length:
             # Escape the unhighlighted part
-            highlighted += html.escape(source_text[last_idx:block.i])
+            highlighted += html.escape(source_text[last_idx:block.a])
             # Escape the matched part and wrap in styling span using MWD Orange 1
-            match_text = html.escape(source_text[block.i:block.i + block.n])
+            match_text = html.escape(source_text[block.a:block.a + block.size])
             highlighted += f'<span style="color: #ba4d01; font-weight: bold;">{match_text}</span>'
-            last_idx = block.i + block.n
+            last_idx = block.a + block.size
             
     highlighted += html.escape(source_text[last_idx:])
     return highlighted.replace('\n', '<br>')
