@@ -8,79 +8,37 @@ from dotenv import load_dotenv
 from auth import ensure_authenticated, logout
 
 def highlight_verbatim_quotes(source_text: str, answer_text: str, min_match_length: int = 30) -> str:
-    """Highlights verbatim quotes from the answer within the source text and truncates."""
+    """Highlights verbatim quotes from the answer within the source text."""
     if not source_text:
         return ""
         
-    # Strip HTML tags but preserve newlines
+    # Strip HTML tags but preserve text content and newlines
     clean_source = re.sub(r'<[^>]+>', ' ', source_text)
-    # Simplify spaces but leave newlines
+    # Condense multiple spaces but preserve explicit newlines
     clean_source = re.sub(r'[ \t]+', ' ', clean_source).strip()
-    # Reduce 3+ newlines to 2
     clean_source = re.sub(r'\n{3,}', '\n\n', clean_source)
     
     if not answer_text:
-        escaped = html.escape(clean_source[:500])
-        return escaped.replace('\n', '<br>') + ("..." if len(clean_source) > 500 else "")
-
+        return html.escape(clean_source).replace('\n', '<br>')
+        
     matcher = difflib.SequenceMatcher(None, clean_source.lower(), answer_text.lower())
     blocks = matcher.get_matching_blocks()
     valid_blocks = [b for b in blocks if b.size >= min_match_length]
     
-    if not valid_blocks:
-        escaped = html.escape(clean_source[:500])
-        return escaped.replace('\n', '<br>') + ("..." if len(clean_source) > 500 else "")
-        
-    # Create intervals around matches
-    PADDING = 200  # Characters before and after match
-    intervals = []
-    for b in valid_blocks:
-        start = max(0, b.a - PADDING)
-        end = min(len(clean_source), b.a + b.size + PADDING)
-        intervals.append([start, end])
-        
-    # Merge overlapping intervals
-    merged = []
-    for interval in sorted(intervals):
-        if not merged:
-            merged.append(interval)
-        else:
-            prev = merged[-1]
-            if interval[0] <= prev[1] + 50: # merge if close
-                prev[1] = max(prev[1], interval[1])
-            else:
-                merged.append(interval)
-                
-    highlighted_snippets = []
-    for m_start, m_end in merged:
-        snippet = ""
-        last_idx = m_start
-        for b in valid_blocks:
-            if b.a >= m_end or (b.a + b.size) <= m_start:
-                continue
-                
-            block_start = max(m_start, b.a)
-            block_end = min(m_end, b.a + b.size)
+    highlighted = ""
+    last_idx = 0
+    
+    for block in blocks:
+        if block.size >= min_match_length:
+            # Escape the unhighlighted part
+            highlighted += html.escape(clean_source[last_idx:block.a])
+            # Escape the matched part and wrap in styling span using MWD Orange 1
+            match_text = html.escape(clean_source[block.a:block.a + block.size])
+            highlighted += f'<span style="color: #ba4d01; font-weight: bold;">{match_text}</span>'
+            last_idx = block.a + block.size
             
-            if block_start > last_idx:
-                snippet += html.escape(clean_source[last_idx:block_start])
-                
-            match_text = html.escape(clean_source[block_start:block_end])
-            snippet += f'<span style="color: #ba4d01; font-weight: bold;">{match_text}</span>'
-            last_idx = block_end
-            
-        if last_idx < m_end:
-            snippet += html.escape(clean_source[last_idx:m_end])
-            
-        highlighted_snippets.append(snippet.replace('\n', '<br>'))
-        
-    final_text = " ... <br><br> ... ".join(highlighted_snippets)
-    if merged and merged[0][0] > 0:
-        final_text = "... " + final_text
-    if merged and merged[-1][1] < len(clean_source):
-        final_text = final_text + " ..."
-        
-    return final_text
+    highlighted += html.escape(clean_source[last_idx:])
+    return highlighted.replace('\n', '<br>')
 
 # Load environment variables
 load_dotenv()
@@ -195,12 +153,14 @@ for message in st.session_state.messages:
                     source_date = cit.get("date_published") or "Unknown Date"
                     doc_type = cit.get("document_type") or "Document"
                     
-                    title = cit.get("title")
-                    if not title or not str(title).strip():
+                    title = str(cit.get("title") or "").strip()
+                    # Strip newlines to prevent Streamlit Markdown parser from generating broken HTML / empty bubbles
+                    title = " ".join(title.split())
+                    if not title:
                         title = "Unknown Title"
                         
-                    url = cit.get("url")
-                    if url and str(url).strip() and str(url).strip() != "#":
+                    url = str(cit.get("url") or "").strip()
+                    if url and url != "#":
                         st.markdown(f"**[{idx+1}]** <a class='citation-link' href='{url}' target='_blank'>{title}</a>", unsafe_allow_html=True)
                     else:
                         st.markdown(f"**[{idx+1}]** <span class='citation-link'>{title}</span>", unsafe_allow_html=True)
