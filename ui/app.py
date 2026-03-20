@@ -3,30 +3,40 @@ import requests
 import os
 import difflib
 import html
+import re
 from dotenv import load_dotenv
 from auth import ensure_authenticated, logout
 
 def highlight_verbatim_quotes(source_text: str, answer_text: str, min_match_length: int = 30) -> str:
     """Highlights verbatim quotes from the answer within the source text."""
-    if not source_text or not answer_text:
-        return html.escape(source_text) if source_text else ""
+    if not source_text:
+        return ""
         
-    matcher = difflib.SequenceMatcher(None, source_text.lower(), answer_text.lower())
+    # Strip HTML tags but preserve text content and newlines
+    clean_source = re.sub(r'<[^>]+>', ' ', source_text)
+    # Condense multiple spaces but preserve explicit newlines
+    clean_source = re.sub(r'[ \t]+', ' ', clean_source).strip()
+    clean_source = re.sub(r'\n{3,}', '\n\n', clean_source)
+    
+    if not answer_text:
+        return html.escape(clean_source).replace('\n', '<br>')
+        
+    matcher = difflib.SequenceMatcher(None, clean_source.lower(), answer_text.lower())
     blocks = matcher.get_matching_blocks()
     
     highlighted = ""
     last_idx = 0
     
     for block in blocks:
-        if block.n >= min_match_length:
+        if block.size >= min_match_length:
             # Escape the unhighlighted part
-            highlighted += html.escape(source_text[last_idx:block.i])
+            highlighted += html.escape(clean_source[last_idx:block.a])
             # Escape the matched part and wrap in styling span using MWD Orange 1
-            match_text = html.escape(source_text[block.i:block.i + block.n])
+            match_text = html.escape(clean_source[block.a:block.a + block.size])
             highlighted += f'<span style="color: #ba4d01; font-weight: bold;">{match_text}</span>'
-            last_idx = block.i + block.n
+            last_idx = block.a + block.size
             
-    highlighted += html.escape(source_text[last_idx:])
+    highlighted += html.escape(clean_source[last_idx:])
     return highlighted.replace('\n', '<br>')
 
 # Load environment variables
@@ -141,10 +151,19 @@ for message in st.session_state.messages:
                 for idx, cit in enumerate(message["citations"]):
                     source_date = cit.get("date_published") or "Unknown Date"
                     doc_type = cit.get("document_type") or "Document"
-                    title = cit.get("title") or "Unknown Title"
-                    url = cit.get("url") or "#"
                     
-                    st.markdown(f"**[{idx+1}]** <a class='citation-link' href='{url}' target='_blank'>{title}</a>", unsafe_allow_html=True)
+                    title = str(cit.get("title") or "").strip()
+                    # Strip newlines to prevent Streamlit Markdown parser from generating broken HTML / empty bubbles
+                    title = " ".join(title.split())
+                    if not title:
+                        title = "Unknown Title"
+                        
+                    url = str(cit.get("url") or "").strip()
+                    if url and url != "#":
+                        st.markdown(f"**[{idx+1}]** <a class='citation-link' href='{url}' target='_blank'>{title}</a>", unsafe_allow_html=True)
+                    else:
+                        st.markdown(f"**[{idx+1}]** <span class='citation-link'>{title}</span>", unsafe_allow_html=True)
+                        
                     st.markdown(f"<div class='source-meta'>Type: {doc_type} | Date: {source_date}</div>", unsafe_allow_html=True)
                     if cit.get("content"):
                         with st.expander("Show relevant text"):
